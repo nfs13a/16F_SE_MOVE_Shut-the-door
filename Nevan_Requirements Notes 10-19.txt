@@ -1,0 +1,12 @@
+Move a course from day/timeslot to newday/newtimeslot
+	find spot that works best for all
+		senior>junior>sophomore>freshman in importance
+
+command line interface
+
+same csv
+
+Tentative: only timeslots that are in the what is in the file
+Tentative: only MWF/TR 8(start)-5(stop)
+
+only care about professors' class timeslots
