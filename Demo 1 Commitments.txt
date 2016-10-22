@@ -1,0 +1,13 @@
+We will be able to read data from the CSV and store it in a database.
+	-student
+	-courses
+	-instructors
+	-buildings and rooms
+
+Will modify previous schema to include:
+	-Instructors
+	-times for course instances
+
+Modify parser and csvs created to reflect new schema
+
+write tests to check data for student/instructor schedules
