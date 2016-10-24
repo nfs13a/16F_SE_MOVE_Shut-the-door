@@ -8,14 +8,8 @@ DROP TABLE IF EXISTS courseInstances;
 DROP TABLE IF EXISTS studentCoursesTaken;
 DROP TABLE IF EXISTS InstructorCoursesTaught;
 SET foreign_key_checks = 1;
-
 CREATE TABLE student
 ( banner varchar(20) NOT NULL,
-fn varchar(50) NOT NULL,
-ln varchar(50) NOT NULL,
-mn varchar(50) NOT NULL,
-pre varchar(10) NOT NULL,
-classification varchar(10) NOT NULL,
 PRIMARY KEY ( banner )
 );
 
@@ -28,8 +22,12 @@ CREATE TABLE courseInstances
 ( CRN varchar(50) NOT NULL,
 code varchar(20) NOT NULL,
 days varchar(10) NOT NULL,
+startTime varchar(50) NOT NULL,
+endTime varchar(50) NOT NULL,
+semester varchar(50) NOT NULL,
 building varchar(50) NOT NULL,
-time varchar(50) NOT NULL,
+room varchar(50) NOT NULL,
+maxStudents int NOT NULL,
 PRIMARY KEY (CRN, code)
 );
 
@@ -37,10 +35,10 @@ CREATE TABLE studentCoursesTaken
 ( banner varchar(20) NOT NULL,
 CRN varchar(50) NOT NULL,
 code varchar(20) NOT NULL,
+classification varchar(10) NOT NULL,
 PRIMARY KEY (banner,CRN,code),
 FOREIGN KEY (banner) references student(banner),
-FOREIGN KEY (CRN) references courseInstances(CRN),
-FOREIGN KEY (code) references courseInstances(code)
+FOREIGN KEY (CRN, code) references courseInstances(CRN, code)
 );
 
 CREATE TABLE InstructorCoursesTaught 
@@ -49,6 +47,5 @@ CRN varchar(50) NOT NULL,
 code varchar(20) NOT NULL,
 PRIMARY KEY (name,CRN,code),
 FOREIGN KEY (name) references instructor(name),
-FOREIGN KEY (CRN) references courseInstances(CRN),
-FOREIGN KEY (code) references courseInstances(code)
+FOREIGN KEY (CRN, code) references courseInstances(CRN, code)
 );

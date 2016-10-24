@@ -3,6 +3,7 @@ package step_definitions;
 import cucumber.api.java.en.*;
 import cucumber.api.PendingException;
 import implementation.StudentCourseManager;
+import static org.junit.Assert.*;
 
 public class MoveTest {
 	//parses CSV, sets up database of student/course info, gives data about students/courses
@@ -15,15 +16,14 @@ public class MoveTest {
 	}
 
 	@Then("^course \"([^\"]*)\" exists$")
-	public void courseExists(String arg1) throws Throwable {
+	public void courseExists(String code) throws Throwable {
 	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
+	    assertEquals(code,scm.courseExists(code));
 	}
 
-	@Given("^using CSV \"([^\"]*)\"$")
-	public void usingCSV(String arg1) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
+	@Given("^database courses$")
+	public void databaseCourses() throws Throwable {
+		scm = new StudentCourseManager();
 	}
 
 	/*@Given("^course \"([^\"]*)\" exists$")
@@ -32,57 +32,36 @@ public class MoveTest {
 	    throw new PendingException();
 	}*/
 
-	@Then("^CRN (\\d+) exists for course \"([^\"]*)\"$")
-	public void crnExistsForCourse(int arg1, String arg2) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
+	@Then("^CRN \"([^\"]*)\" exists for course \"([^\"]*)\"$")
+	public void crnExistsForCourse(String CRN, String code) throws Throwable {
+	    assertEquals(code,scm.getCodeFromCRN(CRN));
 	}
 
-	/*@Given("^CRN (\\d+) exists for course \"([^\"]*)\"$")
-	public void crnExistsForCourse(int arg1, String arg2) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
-	}*/
-
-	@Then("^CRN (\\d+) of course \"([^\"]*)\" is offered semester (\\d+)$")
-	public void crnOfCourseIsOfferedSemester(int arg1, String arg2, int arg3) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
+	@Then("^CRN \"([^\"]*)\" of course \"([^\"]*)\" is offered semester \"([^\"]*)\"$")
+	public void crnOfCourseIsOfferedSemester(String CRN, String code, String semester) throws Throwable {
+		assertEquals(scm.getSemester(CRN, code), semester);
 	}
 
-	/*@Given("^CRN (\\d+) of course \"([^\"]*)\" is offered semester (\\d+)$")
-	public void crnOfCourseIsOfferedSemester(int arg1, String arg2, int arg3) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
-	}*/
-
-	@Then("^CRN (\\d+) of course \"([^\"]*)\" is offered \"([^\"]*)\" from \"([^\"]*)\"$")
-	public void crnOfCourseIsOfferedFrom(int arg1, String arg2, String arg3, String arg4) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
+	@Then("^CRN \"([^\"]*)\" of course \"([^\"]*)\" is offered \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\"$")
+	public void crnOfCourseIsOfferedFromTo(String CRN, String code, String days, String startTime, String endTime) throws Throwable {
+		assertEquals(scm.getDays(CRN, code), days);
+	    assertEquals(scm.getStartTime(CRN, code), startTime);
+	    assertEquals(scm.getEndTime(CRN, code), endTime);
 	}
 
-	@Then("^student \"([^\"]*)\" is enrolled in CRN (\\d+) for course \"([^\"]*)\"$")
-	public void studentIsEnrolledInCRNForCourse(String arg1, int arg2, String arg3) throws Throwable {
+	@Then("^student \"([^\"]*)\" is enrolled in CRN \"([^\"]*)\" for course \"([^\"]*)\"$")
+	public void studentIsEnrolledInCRNForCourse(String banner, String CRN, String code) throws Throwable {
 	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
+	    assertEquals(banner,scm.studentEnrolled(CRN,code,banner));
 	}
 
 	@Then("^student \"([^\"]*)\" exists$")
-	public void studentExists(String arg1) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
+	public void studentExists(String banner) throws Throwable {
+	    assert(scm.studentExists(banner));
 	}
 
-	/*@Given("^student \"([^\"]*)\" exists$")
-	public void studentExists(String arg1) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
-	}*/
-
-	@Then("^student \"([^\"]*)\" has classification \"([^\"]*)\"$")
-	public void studentHasClassification(String arg1, String arg2) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
+	@Then("^student \"([^\"]*)\" has classification \"([^\"]*)\" when taking CRN \"([^\"]*)\" for course \"([^\"]*)\"$")
+	public void studentHasClassificationWhenTakingCRNForCourse(String banner, String classification, String CRN, String code) throws Throwable {
+	    assertEquals(scm.getClassification(banner, CRN, code), classification);
 	}
 }
