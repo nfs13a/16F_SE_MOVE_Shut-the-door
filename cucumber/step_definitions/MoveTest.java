@@ -64,6 +64,11 @@ public class MoveTest {
 	public void studentHasClassificationWhenTakingCRNForCourse(String banner, String classification, String CRN, String code) throws Throwable {
 	    assertEquals(scm.getClassification(banner, CRN, code), classification);
 	}
+	
+	@Then("^student \"([^\"]*)\" has classification \"([^\"]*)\" in semester \"([^\"]*)\"$")
+	public void studentHasClassificationInSemester(String banner, String classification, String semester) throws Throwable {
+		assertEquals(scm.getClassification(banner, semester), classification);
+	}
 
 	@Then("^instructor \"([^\"]*)\" teaches classes \"([^\"]*)\" in \"([^\"]*)\"$")
 	public void instructorTeachesClassesIn(String instructor, String CRNs, String semester) throws Throwable {

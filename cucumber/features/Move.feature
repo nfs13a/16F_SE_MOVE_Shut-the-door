@@ -36,6 +36,7 @@ Feature: Move a course instance from day+time to another
 		Given database courses
 		And student "000234506" exists
 		Then student "000234506" has classification "SO" when taking CRN "11041" for course "CS120"
+		And student "000234506" has classification "SO" in semester "201510"
 
 	Scenario: instructor Aaron Robison teaches a few courses
 		Given database courses

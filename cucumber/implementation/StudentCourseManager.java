@@ -249,7 +249,7 @@ public class StudentCourseManager {
 
 		System.out.println(sqlStudent);
 
-		stmt.executeUpdate(sqlStudent);
+		stmt.executeUpdate(sqlStudent);
 	}
 
 	public boolean studentExists(String banner) throws SQLException {
@@ -381,6 +381,13 @@ public class StudentCourseManager {
 	
 	public String getClassification(String banner, String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken where banner = '" + banner + "' and CRN = '" + CRN + "' and code = '" + code + "';");
+		if (rs.next())
+			return rs.getString("classification");
+		return "no classification for given data";
+	}
+	
+	public String getClassification(String banner, String semester) throws SQLException {
+		ResultSet rs = stmt.executeQuery("SELECT s.banner, s.CRN, s.code, s.classification, c.semester FROM studentCoursesTaken AS s INNER JOIN courseInstances AS c ON s.banner = '" + banner + "' AND s.CRN = c.CRN AND s.code = c.code AND c.semester = '" + semester + "';");
 		if (rs.next())
 			return rs.getString("classification");
 		return "no classification for given data";
