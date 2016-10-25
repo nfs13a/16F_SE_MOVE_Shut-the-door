@@ -130,7 +130,8 @@ public class StudentCourseManager {
 								writeStudent += stuff[56] + "\n";
 
 								allBanners.add(stuff[56]);
-								//System.out.println("student: " + writeStudent);
+								// System.out.println("student: " +
+								// writeStudent);
 								studentCSV.append(writeStudent);
 							}
 							if (!allCIs.contains(stuff[35] + stuff[40] + stuff[42])) {
@@ -144,7 +145,7 @@ public class StudentCourseManager {
 									writeCI += stuff[j];
 
 								writeCI += "," + stuff[66] + "," + stuff[67] + "," + stuff[1] + "," + stuff[68] + ","
-										+ stuff[70] + "," + stuff[128] + "\n";
+										+ stuff[70] + "," + stuff[113 + 26] + "\n";
 								allCIs.add(stuff[35] + stuff[40] + stuff[42]); // CRN
 																				// +
 																				// code
@@ -154,12 +155,12 @@ public class StudentCourseManager {
 							}
 							if (!allSCTs.contains(stuff[35] + stuff[40] + stuff[42] + stuff[56])) {
 								String writeSCT = "";
-								writeSCT += stuff[56] + "," + stuff[35] + "," + stuff[40] + stuff[42]
-										+ "," + stuff[33]									
+								writeSCT += stuff[56] + "," + stuff[35] + "," + stuff[40] + stuff[42] + "," + stuff[33]
 										+ "\n";
 
 								allSCTs.add(stuff[35] + stuff[40] + stuff[42] + stuff[56]);
-								//System.out.println("student + course: " + writeSCT);
+								// System.out.println("student + course: " +
+								// writeSCT);
 								sctCSV.append(writeSCT);
 							}
 
@@ -259,7 +260,8 @@ public class StudentCourseManager {
 		return rs.getInt("total") == 1;
 	}
 
-	//rendered obsolete by student classification changing over different semesters
+	// rendered obsolete by student classification changing over different
+	// semesters
 	public String studentClass(String banner) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT classification FROM student WHERE banner = '" + banner + "';");
 		rs.next();
@@ -301,7 +303,7 @@ public class StudentCourseManager {
 
 		stmt.executeUpdate(sqlStudent);
 	}
-	
+
 	public String getInstructor(String crn) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT instructor FROM courseInstances WHERE CRN = '" + crn + "';");
 		rs.next();
@@ -310,9 +312,12 @@ public class StudentCourseManager {
 		return rs.getString("instructor");
 	}
 
-	public String getCoursesTaughtByInstructorDuringSemester(String instructorName, String semester) throws SQLException {
-		String result ="";
-		ResultSet rs = stmt.executeQuery("select ci.CRN from instructor t inner join instructorcoursestaught ict on (t.name = ict.name) inner join courseInstances ci on (ict.CRN = ci.CRN) where t.name = '" + instructorName +"' and ci.semester = '" + semester +"';");
+	public String getCoursesTaughtByInstructorDuringSemester(String instructorName, String semester)
+			throws SQLException {
+		String result = "";
+		ResultSet rs = stmt.executeQuery(
+				"select ci.CRN from instructor t inner join instructorcoursestaught ict on (t.name = ict.name) inner join courseInstances ci on (ict.CRN = ci.CRN) where t.name = '"
+						+ instructorName + "' and ci.semester = '" + semester + "';");
 		rs.next();
 		result += rs.getString("CRN");
 		while (rs.next()) {
@@ -324,8 +329,10 @@ public class StudentCourseManager {
 	}
 
 	public String getInstructorForClassDuringSemester(String crn, String code, String semester) throws SQLException {
-		String result ="";
-		ResultSet rs = stmt.executeQuery("select ict.name, ci.CRN, ict.code, ci.semester from instructorcoursestaught ict inner join courseInstances ci on (ict.CRN = ci.CRN) where ict.CRN = '" + crn + "' and ict.code = '" + code +"' and ci.semester = '" + semester + "';");
+		String result = "";
+		ResultSet rs = stmt.executeQuery(
+				"select ict.name, ci.CRN, ict.code, ci.semester from instructorcoursestaught ict inner join courseInstances ci on (ict.CRN = ci.CRN) where ict.CRN = '"
+						+ crn + "' and ict.code = '" + code + "' and ci.semester = '" + semester + "';");
 		rs.next();
 		result = rs.getString("name");
 		// return rs.getString("instructor").substring(1,
@@ -344,63 +351,165 @@ public class StudentCourseManager {
 		rs.next();
 		return rs.getString("code");
 	}
-	
+
 	public String getSemester(String CRN, String code) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT semester FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
+		ResultSet rs = stmt.executeQuery(
+				"SELECT semester FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
 		if (rs.next())
 			return rs.getString("semester");
 		return "no semester for CRN " + CRN + " and code " + code;
 	}
-	
+
 	public String getDays(String CRN, String code) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT days FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
+		ResultSet rs = stmt
+				.executeQuery("SELECT days FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
 		if (rs.next())
 			return rs.getString("days");
 		return "no days for CRN " + CRN + " and code " + code;
 	}
-	
+
 	public String getStartTime(String CRN, String code) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT startTime FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
+		ResultSet rs = stmt.executeQuery(
+				"SELECT startTime FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
 		if (rs.next())
 			return rs.getString("startTime");
 		return "no startTime for CRN " + CRN + " and code " + code;
 	}
-	
+
 	public String getEndTime(String CRN, String code) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT endTime FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
+		ResultSet rs = stmt.executeQuery(
+				"SELECT endTime FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
 		if (rs.next())
 			return rs.getString("endTime");
 		return "no endTime for CRN " + CRN + " and code " + code;
 	}
-	
+
+	public String getBuilding(String CRN, String code) throws SQLException {
+		ResultSet rs = stmt.executeQuery(
+				"select building from courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
+		if (rs.next())
+			return rs.getString("building");
+		return "no building for CRN " + CRN + " and code " + code;
+	}
+
+	public String getRoom(String CRN, String code) throws SQLException {
+		ResultSet rs = stmt
+				.executeQuery("select room from courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
+		if (rs.next())
+			return rs.getString("room");
+		return "no room for CRN " + CRN + " and code " + code;
+	}
+
+	public int getMaxStudents(String CRN, String code) throws SQLException {
+		ResultSet rs = stmt.executeQuery(
+				"select maxStudents from courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
+		if (rs.next())
+			return rs.getInt("maxStudents");
+		System.out.println("no max students data for CRN " + CRN + " and code " + code);
+		return -1;
+	}
+
 	public String studentEnrolled(String crn, String code, String banner) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT banner FROM studentCoursesTaken where banner = '"+ banner +"' and CRN = '" + crn + "' and code = '" + code + "';");
+		ResultSet rs = stmt.executeQuery("SELECT banner FROM studentCoursesTaken where banner = '" + banner
+				+ "' and CRN = '" + crn + "' and code = '" + code + "';");
 		rs.next();
 		return rs.getString("banner");
 	}
-	
+
 	public String getClassification(String banner, String CRN, String code) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken where banner = '" + banner + "' and CRN = '" + CRN + "' and code = '" + code + "';");
-		if (rs.next())
-			return rs.getString("classification");
-		return "no classification for given data";
-	}
-	
-	public String getClassification(String banner, String semester) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT s.banner, s.CRN, s.code, s.classification, c.semester FROM studentCoursesTaken AS s INNER JOIN courseInstances AS c ON s.banner = '" + banner + "' AND s.CRN = c.CRN AND s.code = c.code AND c.semester = '" + semester + "';");
+		ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken where banner = '" + banner
+				+ "' and CRN = '" + CRN + "' and code = '" + code + "';");
 		if (rs.next())
 			return rs.getString("classification");
 		return "no classification for given data";
 	}
 
+	public String getClassification(String banner, String semester) throws SQLException {
+		ResultSet rs = stmt.executeQuery(
+				"SELECT s.banner, s.CRN, s.code, s.classification, c.semester FROM studentCoursesTaken AS s INNER JOIN courseInstances AS c ON s.banner = '"
+						+ banner + "' AND s.CRN = c.CRN AND s.code = c.code AND c.semester = '" + semester + "';");
+		if (rs.next())
+			return rs.getString("classification");
+		return "no classification for given data";
+	}
+
+	public boolean instructorExists(String name) throws SQLException {
+		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM instructor WHERE name = '" + name + "';");
+		rs.next();
+		// System.out.println("num: " + rs.getInt("total"));
+		return rs.getInt("total") == 1;
+	}
+
+	public boolean studentIsFree(String banner, String semester, String days, String start, String end)
+			throws SQLException {
+		String query = "select ci.startTime, ci.endTime from studentCoursesTaken sct inner join courseInstances ci on sct.CRN = ci.CRN and sct.code = ci.code and sct.banner = '"
+				+ banner + "' and ci.semester = '" + semester + "' and (";
+		for (char c : days.toCharArray()) {
+			query += "ci.days LIKE '%" + c + "%' OR ";
+		}
+
+		query = query.substring(0, query.lastIndexOf(" OR"));
+
+		query += ") order by ci.startTime;";
+
+		//System.out.println("days query: " + query);
+
+		ResultSet rs = stmt.executeQuery(query);
+		while (rs.next()) {
+			int sT = Integer.parseInt(rs.getString("ci.startTime")); // start
+																		// time
+			int eT = Integer.parseInt(rs.getString("ci.endTime")); // end time
+			int asT = Integer.parseInt(start); // argument start time
+			int aeT = Integer.parseInt(end); // argument end time
+			//System.out.println(sT + " and " + eT + " vs " + asT + " and " + aeT);
+			if (!(aeT < sT || asT > eT)) {
+				return false;
+			}
+			// return true;
+		}
+		// System.out.println("No courses for banner "+banner+" in semester
+		// "+semester);return true;
+		return true;
+	}
+
+	public boolean instructorIsFree(String name, String semester, String days, String start, String end)
+			throws SQLException {
+		String query = "select ci.startTime, ci.endTime from instructorCoursesTaught Ict inner join courseInstances ci on ict.CRN = ci.CRN and ict.code = ci.code and ict.name = '"
+				+ name + "' and ci.semester = '" + semester + "' and (";
+		for (char c : days.toCharArray()) {
+			query += "ci.days LIKE '%" + c + "%' OR ";
+		}
+
+		query = query.substring(0, query.lastIndexOf(" OR"));
+
+		query += ") order by ci.startTime;";
+
+		//System.out.println("days query: " + query);
+
+		ResultSet rs = stmt.executeQuery(query);
+		while (rs.next()) {
+			int sT = Integer.parseInt(rs.getString("ci.startTime")); // start
+																		// time
+			int eT = Integer.parseInt(rs.getString("ci.endTime")); // end
+																	// time
+			int asT = Integer.parseInt(start); // argument start time
+			int aeT = Integer.parseInt(end); // argument end time
+			if (!(aeT < sT || asT > eT))
+				return false;
+		}
+		// System.out.println("No courses for name " + name + " in semester " +
+		// semester);
+		return true;
+	}
+
 	private static String[] newSplit(String str) {
 		// guaranteed to have 147 columns; any more are a mistake and/or not
 		// meaningful
-		String newStrings[] = new String[135]; // array of all fields to be
+		String newStrings[] = new String[140]; // array of all fields to be
 												// filled and returned
 		int i = 0; // counter for number of fields inserted into the array; used
 					// for counting and indexing into newStrings
-		while (i < 135) {
+		while (i < 140) {
 			String temp; // will be filled and inserted into the ith index of
 							// newStrings
 			/*

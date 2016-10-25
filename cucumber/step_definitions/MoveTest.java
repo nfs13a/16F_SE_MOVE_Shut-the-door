@@ -9,11 +9,11 @@ public class MoveTest {
 	//parses CSV, sets up database of student/course info, gives data about students/courses
 	StudentCourseManager scm;
 	
-	/*@Given("^CSV \"([^\"]*)\"$")
+	@Given("^CSV \"([^\"]*)\"$")
 	public void csv(String filename) throws Throwable {
 	    scm = new StudentCourseManager(filename);
 	    scm.parseCRN();
-	}*/
+	}
 
 	@Then("^course \"([^\"]*)\" exists$")
 	public void courseExists(String code) throws Throwable {
@@ -25,12 +25,6 @@ public class MoveTest {
 	public void databaseCourses() throws Throwable {
 		scm = new StudentCourseManager();
 	}
-
-	/*@Given("^course \"([^\"]*)\" exists$")
-	public void courseExists(String arg1) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new PendingException();
-	}*/
 
 	@Then("^CRN \"([^\"]*)\" exists for course \"([^\"]*)\"$")
 	public void crnExistsForCourse(String CRN, String code) throws Throwable {
@@ -48,6 +42,17 @@ public class MoveTest {
 	    assertEquals(scm.getStartTime(CRN, code), startTime);
 	    assertEquals(scm.getEndTime(CRN, code), endTime);
 	}
+	
+	@Then("^CRN \"([^\"]*)\" for course \"([^\"]*)\" is taught in building \"([^\"]*)\" in room \"([^\"]*)\"$")
+	public void crnForCourseIsTaughtInBuildingInRoom(String CRN, String code, String building, String room) throws Throwable {
+	    assertEquals(scm.getBuilding(CRN, code), building);
+	    assertEquals(scm.getRoom(CRN, code), room);
+	}
+	
+	@Then("^CRN \"([^\"]*)\" for course \"([^\"]*)\" has student limit (\\d+)$")
+	public void crnForCourseHasStudentLimit(String CRN, String code, int max) throws Throwable {
+	    assertEquals(scm.getMaxStudents(CRN, code), max);
+	}
 
 	@Then("^student \"([^\"]*)\" is enrolled in CRN \"([^\"]*)\" for course \"([^\"]*)\"$")
 	public void studentIsEnrolledInCRNForCourse(String banner, String CRN, String code) throws Throwable {
@@ -57,7 +62,7 @@ public class MoveTest {
 
 	@Then("^student \"([^\"]*)\" exists$")
 	public void studentExists(String banner) throws Throwable {
-	    assert(scm.studentExists(banner));
+	    assertEquals(scm.studentExists(banner), true);
 	}
 
 	@Then("^student \"([^\"]*)\" has classification \"([^\"]*)\" when taking CRN \"([^\"]*)\" for course \"([^\"]*)\"$")
@@ -78,5 +83,30 @@ public class MoveTest {
 	@Then("^the instructor for code \"([^\"]*)\" and crn \"([^\"]*)\" during semester \"([^\"]*)\" is \"([^\"]*)\"$")
 	public void theInstructorForCodeAndCrnDuringSemesterIs(String code, String crn, String semester, String instructor) throws Throwable {
 		assertEquals(scm.getInstructorForClassDuringSemester(crn, code, semester), instructor);
+	}
+	
+	@Then("^student \"([^\"]*)\" is not free semester \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\"$")
+	public void studentIsNotFreeSemesterOnDaysFromTo(String banner, String semester, String days, String startTime, String endTime) throws Throwable {
+		assertEquals(!scm.studentIsFree(banner, semester, days, startTime, endTime), true);
+	}
+
+	@Then("^student \"([^\"]*)\" is free semester \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\"$")
+	public void studentIsFreeSemesterOnDaysFromTo(String banner, String semester, String days, String startTime, String endTime) throws Throwable {
+		assertEquals(scm.studentIsFree(banner, semester, days, startTime, endTime), true);
+	}
+
+	@Given("^instructor \"([^\"]*)\" exists$")
+	public void instructorExists(String name) throws Throwable {
+		assertEquals(scm.instructorExists(name), true);
+	}
+
+	@Then("^instructor \"([^\"]*)\" is not free semester \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\"$")
+	public void instructorIsNotFreeSemesterOnDaysFromTo(String banner, String semester, String days, String startTime, String endTime) throws Throwable {
+		assertEquals(!scm.instructorIsFree(banner, semester, days, startTime, endTime), true);
+	}
+	
+	@Then("^instructor \"([^\"]*)\" is free semester \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\"$")
+	public void instructorIsFreeSemesterOnDaysFromTo(String banner, String semester, String days, String startTime, String endTime) throws Throwable {
+		assertEquals(scm.instructorIsFree(banner, semester, days, startTime, endTime), true);
 	}
 }
