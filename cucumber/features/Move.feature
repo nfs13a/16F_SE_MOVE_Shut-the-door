@@ -1,8 +1,8 @@
 Feature: Move a course instance from day+time to another
 
-	Scenario: CS120 exists
-		Given CSV "big"
-		Then course "CS120" exists
+	#Scenario: CS120 exists
+		#Given CSV "big"
+		#Then course "CS120" exists
 
 	Scenario: CS120 has CRN "11041"
 		Given database courses
@@ -36,3 +36,11 @@ Feature: Move a course instance from day+time to another
 		Given database courses
 		And student "000234506" exists
 		Then student "000234506" has classification "SO" when taking CRN "11041" for course "CS120"
+
+	Scenario: instructor Aaron Robison teaches a few courses
+		Given database courses
+		Then instructor "Aaron Robison" teaches classes "11165,11172,11173" in "201510"
+
+	Scenario: Get instructor for BGRK441 during 201610
+		Given database courses
+		Then the instructor for code "BGRK441" and crn "10003" during semester "201610" is "Trevor Thompson"

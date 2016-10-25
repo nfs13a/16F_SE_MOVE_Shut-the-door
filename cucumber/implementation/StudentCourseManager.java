@@ -249,7 +249,7 @@ public class StudentCourseManager {
 
 		System.out.println(sqlStudent);
 
-		stmt.executeUpdate(sqlStudent);
+		stmt.executeUpdate(sqlStudent);
 	}
 
 	public boolean studentExists(String banner) throws SQLException {
@@ -308,6 +308,29 @@ public class StudentCourseManager {
 		// return rs.getString("instructor").substring(1,
 		// rs.getString("instructor").length() - 1);
 		return rs.getString("instructor");
+	}
+
+	public String getCoursesTaughtByInstructorDuringSemester(String instructorName, String semester) throws SQLException {
+		String result ="";
+		ResultSet rs = stmt.executeQuery("select ci.CRN from instructor t inner join instructorcoursestaught ict on (t.name = ict.name) inner join courseInstances ci on (ict.CRN = ci.CRN) where t.name = '" + instructorName +"' and ci.semester = '" + semester +"';");
+		rs.next();
+		result += rs.getString("CRN");
+		while (rs.next()) {
+			result += "," + rs.getString("CRN");
+		}
+		// return rs.getString("instructor").substring(1,
+		// rs.getString("instructor").length() - 1);
+		return result;
+	}
+
+	public String getInstructorForClassDuringSemester(String crn, String code, String semester) throws SQLException {
+		String result ="";
+		ResultSet rs = stmt.executeQuery("select ict.name, ci.CRN, ict.code, ci.semester from instructorcoursestaught ict inner join courseInstances ci on (ict.CRN = ci.CRN) where ict.CRN = '" + crn + "' and ict.code = '" + code +"' and ci.semester = '" + semester + "';");
+		rs.next();
+		result = rs.getString("name");
+		// return rs.getString("instructor").substring(1,
+		// rs.getString("instructor").length() - 1);
+		return result;
 	}
 
 	public String getCodeFromCRN(String crn) throws SQLException {

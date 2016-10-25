@@ -9,11 +9,11 @@ public class MoveTest {
 	//parses CSV, sets up database of student/course info, gives data about students/courses
 	StudentCourseManager scm;
 	
-	@Given("^CSV \"([^\"]*)\"$")
+	/*@Given("^CSV \"([^\"]*)\"$")
 	public void csv(String filename) throws Throwable {
 	    scm = new StudentCourseManager(filename);
 	    scm.parseCRN();
-	}
+	}*/
 
 	@Then("^course \"([^\"]*)\" exists$")
 	public void courseExists(String code) throws Throwable {
@@ -63,5 +63,15 @@ public class MoveTest {
 	@Then("^student \"([^\"]*)\" has classification \"([^\"]*)\" when taking CRN \"([^\"]*)\" for course \"([^\"]*)\"$")
 	public void studentHasClassificationWhenTakingCRNForCourse(String banner, String classification, String CRN, String code) throws Throwable {
 	    assertEquals(scm.getClassification(banner, CRN, code), classification);
+	}
+
+	@Then("^instructor \"([^\"]*)\" teaches classes \"([^\"]*)\" in \"([^\"]*)\"$")
+	public void instructorTeachesClassesIn(String instructor, String CRNs, String semester) throws Throwable {
+	    assertEquals(scm.getCoursesTaughtByInstructorDuringSemester(instructor, semester), CRNs);
+	}
+
+	@Then("^the instructor for code \"([^\"]*)\" and crn \"([^\"]*)\" during semester \"([^\"]*)\" is \"([^\"]*)\"$")
+	public void theInstructorForCodeAndCrnDuringSemesterIs(String code, String crn, String semester, String instructor) throws Throwable {
+		assertEquals(scm.getInstructorForClassDuringSemester(crn, code, semester), instructor);
 	}
 }
