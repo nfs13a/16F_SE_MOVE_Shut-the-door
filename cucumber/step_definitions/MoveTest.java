@@ -109,4 +109,14 @@ public class MoveTest {
 	public void instructorIsFreeSemesterOnDaysFromTo(String banner, String semester, String days, String startTime, String endTime) throws Throwable {
 		assertEquals(scm.instructorIsFree(banner, semester, days, startTime, endTime), true);
 	}
+	
+	/*@Then("^CRN \"([^\"]*)\" of course \"([^\"]*)\" has seats (\\d+)$")
+	public void crnOfCourseHasSeats(String CRN, String code, int max) throws Throwable {
+	    assertEquals(scm.getMaxSeats(CRN, code), max);
+	}*/
+	
+	@Then("^the max seats in \"([^\"]*)\" room \"([^\"]*)\" is (\\d+)$")
+	public void theMaxSeatsInRoomIs(String building, String room, int max) throws Throwable {
+	    assertEquals(scm.getMaxSeats(building, room), max);
+	}
 }

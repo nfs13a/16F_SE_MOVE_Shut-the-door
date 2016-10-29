@@ -79,3 +79,12 @@ Feature: Move a course instance from day+time to another
 		And instructor "Trevor Thompson" exists
 		Then instructor "Trevor Thompson" is not free semester "201510" on days "MWF" from "0930" to "1050"
 		But instructor "Trevor Thompson" is free semester "201510" on days "TR" from "0800" to "0920"
+
+	Scenario: the max size of MBB 314 is 30
+		Given database courses
+		And course "CS120" exists
+		And CRN "11041" exists for course "CS120"
+		And CRN "11041" of course "CS120" is offered semester "201510"
+		And CRN "11041" for course "CS120" is taught in building "MBB" in room "314"
+		Then the max seats in "MBB" room "314" is 30
+		#Then CRN "11041" of course "CS120" has seats 30

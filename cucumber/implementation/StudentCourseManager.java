@@ -452,7 +452,7 @@ public class StudentCourseManager {
 
 		query += ") order by ci.startTime;";
 
-		//System.out.println("days query: " + query);
+		// System.out.println("days query: " + query);
 
 		ResultSet rs = stmt.executeQuery(query);
 		while (rs.next()) {
@@ -461,7 +461,8 @@ public class StudentCourseManager {
 			int eT = Integer.parseInt(rs.getString("ci.endTime")); // end time
 			int asT = Integer.parseInt(start); // argument start time
 			int aeT = Integer.parseInt(end); // argument end time
-			//System.out.println(sT + " and " + eT + " vs " + asT + " and " + aeT);
+			// System.out.println(sT + " and " + eT + " vs " + asT + " and " +
+			// aeT);
 			if (!(aeT < sT || asT > eT)) {
 				return false;
 			}
@@ -484,7 +485,7 @@ public class StudentCourseManager {
 
 		query += ") order by ci.startTime;";
 
-		//System.out.println("days query: " + query);
+		// System.out.println("days query: " + query);
 
 		ResultSet rs = stmt.executeQuery(query);
 		while (rs.next()) {
@@ -500,6 +501,27 @@ public class StudentCourseManager {
 		// System.out.println("No courses for name " + name + " in semester " +
 		// semester);
 		return true;
+	}
+
+	/*public int getMaxSeats(String CRN, String code) throws SQLException {
+		ResultSet rs = stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE "
+				+ "building = (SELECT building FROM courseInstances WHERE CRN = '" + CRN + "' and code = '" + code
+				+ "')" + " AND room = (SELECT room FROM courseInstances WHERE CRN = '" + CRN + "' and code = '" + code
+				+ "') " + "AND semester <= (SELECT semester FROM courseInstances WHERE CRN = '" + CRN + "' and code = '"
+				+ code + "') " + "order by maxStudents desc;");
+		if (rs.next())
+			return rs.getInt("maxStudents");
+		System.out.println("no valid data for CRN " + CRN + " and code " + code);
+		return -1;
+	}*/
+	
+	public int getMaxSeats(String building, String room) throws SQLException {
+		ResultSet rs = stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE "
+				+ "building = '" + building + "' AND room = '" + room + "' order by maxStudents desc;");
+		if (rs.next())
+			return rs.getInt("maxStudents");
+		System.out.println("no valid data for building " + building + " and room " + room);
+		return -1;
 	}
 
 	private static String[] newSplit(String str) {
