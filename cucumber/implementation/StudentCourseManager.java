@@ -620,8 +620,10 @@ public class StudentCourseManager {
 		Date dateobj2;
 		if (timeLength == 50) {
 			dateobj2 = new Date(0, 0, 0, 8, 50);
-		} else {
+		} else if (timeLength == 90) {
 			dateobj2 = new Date(0, 0, 0, 9, 20);
+		} else {
+			return "Invalid length of class session given current constraints";
 		}
 		
 		
