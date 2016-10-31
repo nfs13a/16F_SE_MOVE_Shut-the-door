@@ -1,0 +1,10 @@
+We will be able to list which students can attend a course that is moved to a new room and/or time.
+
+	(loop) is student free
+	is instructor free
+	is room big enough
+	is room free
+
+We will develop a formula that will quantify how well a move of a course works with the enrolled students' schedules.
+
+	total weight = 4 * seniors_can - 4 * seniors_cant + ... freshman_can - freshman_cant
