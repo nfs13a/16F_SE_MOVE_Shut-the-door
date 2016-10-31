@@ -62,7 +62,9 @@ Feature: Move a course instance from day+time to another
 
 	Scenario: instructor Aaron Robison teaches a few courses
 		Given database courses
-		Then instructor "Aaron Robison" teaches classes "11165,11172,11173" in "201510"
+		Then instructor "Aaron Robison" teaches course "CHEM101" with CRN "11165"
+		#why did we format this test like this?
+		And instructor "Aaron Robison" teaches classes "11165,11172,11173" in "201510"
 
 	Scenario: Get instructor for BGRK441 during 201610
 		Given database courses
@@ -72,6 +74,7 @@ Feature: Move a course instance from day+time to another
 		Given database courses
 		And student "000234506" exists
 		Then student "000234506" is not free semester "201510" on days "MWF" from "1000" to "1200"
+		But student "000234506" is free semester "201510" on days "MWF" from "1100" to "1130"
 		But student "000234506" is free semester "201510" on days "MWF" from "1100" to "1130"
 
 	Scenario: Trevor Thompson free times
@@ -88,3 +91,15 @@ Feature: Move a course instance from day+time to another
 		And CRN "11041" for course "CS120" is taught in building "MBB" in room "314"
 		Then the max seats in "MBB" room "314" is 30
 		#Then CRN "11041" of course "CS120" has seats 30
+
+	Scenario: 11041 CS120 can fit in many rooms
+		Given database courses
+		And course "CS120" exists
+		And CRN "11041" exists for course "CS120"
+		And CRN "11041" for course "CS120" is taught in building "MBB" in room "314"
+		Then CRN "11041" for course "CS120" can fit in rooms "115,116,117,118,201,215,216,217,218,301,314,315,316,318,"
+
+	Scenario: MBB 314 is free certain times
+		Given database courses
+		Then building "MBB" room "314" is free during semester "201510" on days "MWF" from "0800" to "0850"
+		Then building "MBB" room "314" is free "0800-0850,1100-1150,1200-1250,1300-1350,1500-1550,1600-1650," during semester "201510" on days "MWF" for 50 minutes

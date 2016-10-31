@@ -17,8 +17,7 @@ public class MoveTest {
 
 	@Then("^course \"([^\"]*)\" exists$")
 	public void courseExists(String code) throws Throwable {
-	    // Write code here that turns the phrase above into concrete actions
-	    assertEquals(code,scm.courseExists(code));
+	    assertEquals(scm.courseExists(code), true);
 	}
 
 	@Given("^database courses$")
@@ -28,7 +27,7 @@ public class MoveTest {
 
 	@Then("^CRN \"([^\"]*)\" exists for course \"([^\"]*)\"$")
 	public void crnExistsForCourse(String CRN, String code) throws Throwable {
-	    assertEquals(code,scm.getCodeFromCRN(CRN));
+	    assertEquals(scm.codeExistsForCRN(CRN, code), true);
 	}
 
 	@Then("^CRN \"([^\"]*)\" of course \"([^\"]*)\" is offered semester \"([^\"]*)\"$")
@@ -57,7 +56,7 @@ public class MoveTest {
 	@Then("^student \"([^\"]*)\" is enrolled in CRN \"([^\"]*)\" for course \"([^\"]*)\"$")
 	public void studentIsEnrolledInCRNForCourse(String banner, String CRN, String code) throws Throwable {
 	    // Write code here that turns the phrase above into concrete actions
-	    assertEquals(banner,scm.studentEnrolled(CRN,code,banner));
+	    assertEquals(scm.studentEnrolled(CRN,code,banner), true);
 	}
 
 	@Then("^student \"([^\"]*)\" exists$")
@@ -73,6 +72,11 @@ public class MoveTest {
 	@Then("^student \"([^\"]*)\" has classification \"([^\"]*)\" in semester \"([^\"]*)\"$")
 	public void studentHasClassificationInSemester(String banner, String classification, String semester) throws Throwable {
 		assertEquals(scm.getClassification(banner, semester), classification);
+	}
+	
+	@Then("^instructor \"([^\"]*)\" teaches course \"([^\"]*)\" with CRN \"([^\"]*)\"$")
+	public void instructorTeachesCourseWithCRN(String name, String code, String CRN) throws Throwable {
+	    assertEquals(scm.getInstructor(CRN, code), name);
 	}
 
 	@Then("^instructor \"([^\"]*)\" teaches classes \"([^\"]*)\" in \"([^\"]*)\"$")
@@ -118,5 +122,25 @@ public class MoveTest {
 	@Then("^the max seats in \"([^\"]*)\" room \"([^\"]*)\" is (\\d+)$")
 	public void theMaxSeatsInRoomIs(String building, String room, int max) throws Throwable {
 	    assertEquals(scm.getMaxSeats(building, room), max);
+	}
+	
+	@Then("^CRN \"([^\"]*)\" for course \"([^\"]*)\" can fit in rooms \"([^\"]*)\"$")
+	public void crnForCourseCanFitInRooms(String CRN, String code, String rooms) throws Throwable {
+	    assertEquals(scm.getAllCandidateRooms(CRN, code), rooms);
+	}
+	
+	/*@Then("^building \"([^\"]*)\" room \"([^\"]*)\" is free \"([^\"]*)\" during semester \"([^\"]*)\" on days \"([^\"]*)\"$")
+	public void buildingRoomIsFreeDuringSemesterOnDays(String building, String room, String times, String semester, String days) throws Throwable {
+		assertEquals(scm.getAllOpenTimes(building, room, semester, days), times);
+	}*/
+	
+	@Then("^building \"([^\"]*)\" room \"([^\"]*)\" is free during semester \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\"$")
+	public void buildingRoomIsFreeDuringSemesterOnDaysFromTo(String building, String room, String semester, String days, String start, String end) throws Throwable {
+	    assertEquals(scm.roomIsFree(building, room, semester, days, start, end), true);
+	}
+	
+	@Then("^building \"([^\"]*)\" room \"([^\"]*)\" is free \"([^\"]*)\" during semester \"([^\"]*)\" on days \"([^\"]*)\" for (\\d+) minutes$")
+	public void buildingRoomIsFreeDuringSemesterOnDaysForMinutes(String building, String room, String times, String semester, String days, int time) throws Throwable {
+		assertEquals(scm.getAllOpenTimes(building, room, semester, days, time), times);
 	}
 }

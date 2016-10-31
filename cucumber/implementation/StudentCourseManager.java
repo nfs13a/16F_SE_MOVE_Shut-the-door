@@ -9,66 +9,88 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Vector;
 import java.util.Map;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class StudentCourseManager {
 
+	// stores the local path to the CSV from the absolute path
 	private String csvPath;
-	private static Connection conn = null;
-	private static Statement stmt = null;
+	// gets the absolute path to properly access files on any system
 	private static String lol = new File("").getAbsolutePath();
-	private static Vector<String> allBanners;
-	private static Vector<String> allCIs;
-	private static Vector<String> allSCTs;
-	private static Vector<String> allIs;
-	private static Vector<String> allICTs;
 
-	public StudentCourseManager(String CSV) {
-		if (CSV.equals("big")) {
+	// for building statements
+	private static Connection conn = null;
+	// for executing sql
+	private static Statement stmt = null;
 
-			// csvPath = "C:/Users/CPU8/Google Drive/Software
-			// Engineering/Project 1 Local backups/cs374_anon.csv";
-			/*
-			 * try { Runtime.getRuntime().exec(lol.replace("\\", "/") + "
-			 * implementation/help.bat");
-			 * 
-			 * } catch (IOException ie) { Thread.sleep }
-			 */
+	// ___________ kept it singular out of fear of great shame
+	// /
+	// v
+	// keeps track of which primary key has been entered for each of the 5
+	// tables
+	private static Vector<String> allBanners; // student
+	private static Vector<String> allCIs; // courseInstances
+	private static Vector<String> allSCTs; // studentCoursesTaken
+	private static Vector<String> allIs; // instructor
+	private static Vector<String> allICTs; // instructorCoursesTaught
 
+	public StudentCourseManager(String CSV) { // argument must include the
+												// ".csv" extension if it is a
+												// filename
+		if (CSV.equals("big")) // use the csv given by Dr. Reeves
 			csvPath = lol + "/implementation/cs374_anon.csv";
-		} else
+		else // use the test csv filename entered
 			csvPath = lol + "/implementation/" + CSV;
 
+		// initialize all primary key vectors
 		allBanners = new Vector<String>();
 		allCIs = new Vector<String>();
 		allSCTs = new Vector<String>();
 		allIs = new Vector<String>();
 		allICTs = new Vector<String>();
 	}
-
-	public StudentCourseManager() throws SQLException {
+	
+	private static void connectToDatabase() throws SQLException {
 		final String DB_URL = "jdbc:mysql://localhost/";
 
 		// Database credentials
 		final String USER = "root";
-		final String PASS = ""; // insert your password here
+		final String PASS = ""; // password is set to "NO", as in no password,
+								// on test systems.
+								// should add input to final tool to prompt user
+								// for password
 
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
+			//creates Connection object from database path (?) and credentials
 			conn = (Connection) DriverManager.getConnection(DB_URL, USER, PASS);
 		} catch (ClassNotFoundException e) {
 			System.err.println("Unable to get mysql driver: " + e);
 		} catch (SQLException e) {
 			System.err.println("Unable to connect to server: " + e);
 		}
+		//initializes Statement class object
 		stmt = conn.createStatement();
+	}
+
+	// used when the "big" csv has already been parsed and inserted
+	// will only execute the update of "use courses"
+	public StudentCourseManager() throws SQLException {
+		//established connection
+		connectToDatabase();
 		stmt.executeUpdate("USE COURSES;");
 
+		// initialize all primary key vectors
 		allBanners = new Vector<String>();
 		allCIs = new Vector<String>();
 		allSCTs = new Vector<String>();
@@ -78,16 +100,15 @@ public class StudentCourseManager {
 
 	public void parseCRN() {
 		try {
-			// default is: String csvFile = "C:/Users/CPU8/Google Drive/Software
-			// Engineering/workspace/Beginnings/src/CSVParsing/cs374_anon.csv";
+			// sets up parsing data
 			BufferedReader br = null;
 			String line = "";
 			String cvsSplitBy = ",";
 
-			// for the csv
 			try {
 				br = new BufferedReader(new FileReader(csvPath));
-				int i = 1;
+				
+				//create a new CSV per table in the database
 				FileWriter studentCSV = new FileWriter(lol + "/studentTable.csv");
 				FileWriter ciCSV = new FileWriter(lol + "/ciTable.csv");
 				FileWriter sctCSV = new FileWriter(lol + "/sctTable.csv");
@@ -97,115 +118,117 @@ public class StudentCourseManager {
 				/*
 				 * Fields we care about:
 				 * 
-				 * Column | Number in stuff array | CRN: 5 digit number | 35
-				 * Subject_Code: * 2-4 string all caps | 40 Course_Number:
-				 * 100-599? | 42 Instructor_Name: literally "Last, First" | 50
-				 * Grade_Code: only A-D, F, W, and maybe WF | 55 Banner_ID: 9
-				 * digit number but usually 3-4 leading 0's | 56 First_Name | 57
-				 * Last_Name | 58 Middle_Name | 59 Prefix | 60 Class_Code: FR,
-				 * SO, JR, SR, GR, SU | 33 Billing_Hours: hours the course is
-				 * worth | 47 Credit_Hours: 0 if not passed, Billing_Hours if is
-				 * | 48
+				 * Column 													| Number in stuff array 
+				 * CRN: 5 digit number 										| 35
+				 * Subject_Code: * 2-4 string all caps 						| 40 
+				 * Course_Number: 100-599? 									| 42 
+				 * Instructor_Name: literally "Last, First" 				| 50
+				 * Grade_Code: only A-D, F, W, and maybe WF 				| 55 
+				 * Banner_ID: 9 digit number but usually 3-4 leading 0's 	| 56 
+				 * First_Name 												| 57
+				 * Last_Name 												| 58 
+				 * Middle_Name 												| 59 
+				 * Prefix 													| 60 
+				 * Class_Code: FR, SO, JR, SR, GR, SU 						| 33 
+				 * Billing_Hours: hours the course is worth 				| 47 
+				 * Credit_Hours: 0 if not passed, Billing_Hours if is 		| 48
 				 */
-
+				
+				createDatabases(lol + "/implementation/CoursesSetup.sql");
 				while ((line = br.readLine()) != null) {
 					String[] stuff = StudentCourseManager.newSplit(line);
-					if (i == 1) {
-						// System.out.println("Creating database...");
-						createDatabases(lol + "/implementation/CoursesSetup.sql");
-					} else {
-						stmt = conn.createStatement();
-						if (!(stuff[40].isEmpty() || stuff[42].isEmpty() || stuff[35].isEmpty() || stuff[56].isEmpty()
-								|| stuff[50].isEmpty())) {
-							stuff[50] = stuff[50].substring(1, stuff[50].length() - 1);
+					stmt = conn.createStatement();
 
-							if (!allBanners.contains(stuff[56])) {
-								String writeStudent = "";
+					// only parse the line if none of the components of the tables' primary key (<- singular, ugh) is/are empty
+					if (!(stuff[40].isEmpty() || stuff[42].isEmpty() || stuff[35].isEmpty() || stuff[56].isEmpty()
+							|| stuff[50].isEmpty())) {
+						stuff[50] = stuff[50].substring(1, stuff[50].length() - 1);
 
-								/*
-								 * for (int l = 56; l < 61; l++) { writeStudent
-								 * += stuff[l] + ","; }
-								 */
+						//write entry to students if new
+						if (!allBanners.contains(stuff[56])) { // student only represented by a banner
+							String writeStudent = "";
 
-								writeStudent += stuff[56] + "\n";
+							writeStudent += stuff[56] + "\n";
 
-								allBanners.add(stuff[56]);
-								// System.out.println("student: " +
-								// writeStudent);
-								studentCSV.append(writeStudent);
+							//add primary key to Vector
+							allBanners.add(stuff[56]);
+							//add new line to appropriate csv
+							studentCSV.append(writeStudent);
+						}
+						//write entry to courseInstances if new
+						if (!allCIs.contains(stuff[35] + stuff[40] + stuff[42])) {
+							String writeCI = "";
+							// CRN, code alpha (e.g. CS), code numeric (e.g. 120)
+							writeCI += stuff[35] + "," + stuff[40] + stuff[42] + ",";
+
+							// 5 day columns, M|T|W|R|F
+							for (int j = 72; j < 77; j++)
+								writeCI += stuff[j];
+
+							// start time, end time, semester, building, room, max students
+							writeCI += "," + stuff[66] + "," + stuff[67] + "," + stuff[1] + "," + stuff[68] + ","
+									+ stuff[70] + "," + stuff[113 + 26] + "\n";
+							
+							//add primary key to Vector
+							allCIs.add(stuff[35] + stuff[40] + stuff[42]); // CRN + code
+							//add new line to appropriate csv
+							ciCSV.append(writeCI);
+						}
+						//write entry to studentCoursesTaken if new
+						if (!allSCTs.contains(stuff[35] + stuff[40] + stuff[42] + stuff[56])) {
+							String writeSCT = "";
+							writeSCT += stuff[56] + "," + stuff[35] + "," + stuff[40] + stuff[42] + "," + stuff[33]
+									+ "\n";
+
+							//add primary key to Vector
+							allSCTs.add(stuff[35] + stuff[40] + stuff[42] + stuff[56]);
+							//add new line to appropriate csv
+							sctCSV.append(writeSCT);
+						}
+						//write entry to instructor if new
+						if (!allIs.contains(stuff[50])) {
+							String writeI = "";
+							// writeI += stuff[50] + "\n";
+							if (stuff[50].contains(",")) {
+								writeI += stuff[50].substring(stuff[50].indexOf(",") + 2) + " "
+										+ stuff[50].substring(0, stuff[50].indexOf(",")) + "\n";
+							} else {
+								writeI += stuff[50] + "\n";
 							}
-							if (!allCIs.contains(stuff[35] + stuff[40] + stuff[42])) {
-								String writeCI = "";
-								// System.out.println(stuff[50].substring(0,
-								// stuff[50].indexOf(",")));
-								writeCI += stuff[35] + "," + stuff[40] + stuff[42] + ",";
+							
+							//add primary key to Vector
+							allIs.add(stuff[50]);
+							//add new line to appropriate csv
+							instructorCSV.append(writeI);
+						}
+						//write entry to instructorCoursesTaught if new
+						if (!allICTs.contains(stuff[50] + stuff[35] + stuff[40] + stuff[42])) {
+							String writeICT = "";
 
-								// 5 day columns
-								for (int j = 72; j < 77; j++)
-									writeCI += stuff[j];
-
-								writeCI += "," + stuff[66] + "," + stuff[67] + "," + stuff[1] + "," + stuff[68] + ","
-										+ stuff[70] + "," + stuff[113 + 26] + "\n";
-								allCIs.add(stuff[35] + stuff[40] + stuff[42]); // CRN
-																				// +
-																				// code
-								// System.out.println("course instance: " +
-								// writeCI);
-								ciCSV.append(writeCI);
+							if (stuff[50].contains(",")) {
+								writeICT += stuff[50].substring(stuff[50].indexOf(",") + 2) + " "
+										+ stuff[50].substring(0, stuff[50].indexOf(",")) + "," + stuff[35] + ","
+										+ stuff[40] + stuff[42] + "\n";
+							} else {
+								writeICT += stuff[50] + "," + stuff[35] + "," + stuff[40] + stuff[42] + "\n";
 							}
-							if (!allSCTs.contains(stuff[35] + stuff[40] + stuff[42] + stuff[56])) {
-								String writeSCT = "";
-								writeSCT += stuff[56] + "," + stuff[35] + "," + stuff[40] + stuff[42] + "," + stuff[33]
-										+ "\n";
-
-								allSCTs.add(stuff[35] + stuff[40] + stuff[42] + stuff[56]);
-								// System.out.println("student + course: " +
-								// writeSCT);
-								sctCSV.append(writeSCT);
-							}
-
-							if (!allIs.contains(stuff[50])) {
-								String writeI = "";
-								// writeI += stuff[50] + "\n";
-								if (stuff[50].contains(",")) {
-									writeI += stuff[50].substring(stuff[50].indexOf(",") + 2) + " "
-											+ stuff[50].substring(0, stuff[50].indexOf(",")) + "\n";
-								} else {
-									writeI += stuff[50] + "\n";
-								}
-								// maybe add list to a vector for use later?
-								allIs.add(stuff[50]);
-								// System.out.println("teacher: " + writeI);
-								instructorCSV.append(writeI);
-							}
-
-							if (!allICTs.contains(stuff[50] + stuff[35] + stuff[40] + stuff[42])) {
-								String writeICT = "";
-
-								if (stuff[50].contains(",")) {
-									writeICT += stuff[50].substring(stuff[50].indexOf(",") + 2) + " "
-											+ stuff[50].substring(0, stuff[50].indexOf(",")) + "," + stuff[35] + ","
-											+ stuff[40] + stuff[42] + "\n";
-								} else {
-									writeICT += stuff[50] + "," + stuff[35] + "," + stuff[40] + stuff[42] + "\n";
-								}
-
-								allIs.add(stuff[50] + stuff[35] + stuff[40] + stuff[42]);
-								// System.out.println("teacher + course: " +
-								// writeICT);
-								ictCSV.append(writeICT);
-							}
+							
+							//add primary key to Vector
+							allIs.add(stuff[50] + stuff[35] + stuff[40] + stuff[42]);
+							//add new line to appropriate csv
+							ictCSV.append(writeICT);
 						}
 					}
-					// if (i % 10000 == 0) System.out.println(i);
-					i++;
 				}
+				
+				//close the filewriters that write to the table csv's
 				studentCSV.close();
 				ciCSV.close();
 				sctCSV.close();
 				instructorCSV.close();
 				ictCSV.close();
 
+				//unique methods calls that load data from table csv's into tables
 				insertStudent("studentTable.csv");
 				insertInstructor("instructorTable.csv");
 				insertCourseInstance("ciTable.csv");
@@ -227,19 +250,10 @@ public class StudentCourseManager {
 	}
 
 	private static void createDatabases(String file) throws FileNotFoundException, IOException, SQLException {
-		final String DB_URL = "jdbc:mysql://localhost/";
-
-		// Database credentials
-		final String USER = "root";
-		final String PASS = ""; // insert your password here
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			conn = (Connection) DriverManager.getConnection(DB_URL, USER, PASS);
-		} catch (ClassNotFoundException e) {
-			System.err.println("Unable to get mysql driver: " + e);
-		} catch (SQLException e) {
-			System.err.println("Unable to connect to server: " + e);
-		}
+		//established connection
+		connectToDatabase();
+		
+		//create a ScriptRunner and uses it to create a new database
 		ScriptRunner runner = new ScriptRunner(conn, false, false);
 		runner.runScript(new BufferedReader(new FileReader(file)));
 	}
@@ -252,22 +266,7 @@ public class StudentCourseManager {
 
 		stmt.executeUpdate(sqlStudent);
 	}
-
-	public boolean studentExists(String banner) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM student WHERE banner = '" + banner + "';");
-		rs.next();
-		// System.out.println("num: " + rs.getInt("total"));
-		return rs.getInt("total") == 1;
-	}
-
-	// rendered obsolete by student classification changing over different
-	// semesters
-	public String studentClass(String banner) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT classification FROM student WHERE banner = '" + banner + "';");
-		rs.next();
-		return rs.getString("classification");
-	}
-
+	
 	private static void insertCourseInstance(String csvIn) throws SQLException {
 		String sqlCourseInstance = "LOAD DATA LOCAL INFILE '" + lol.replace("\\", "/") + "/" + csvIn
 				+ "' INTO TABLE courseInstances " + "FIELDS TERMINATED BY ','" + "LINES TERMINATED BY '\n';";
@@ -276,7 +275,7 @@ public class StudentCourseManager {
 
 		stmt.executeUpdate(sqlCourseInstance);
 	}
-
+	
 	private static void insertStudentCourseTaken(String csvIn) throws SQLException {
 		String sqlSCT = "LOAD DATA LOCAL INFILE '" + lol.replace("\\", "/") + "/" + csvIn
 				+ "' INTO TABLE studentCoursesTaken " + "FIELDS TERMINATED BY ','" + "LINES TERMINATED BY '\n';";
@@ -304,16 +303,23 @@ public class StudentCourseManager {
 		stmt.executeUpdate(sqlStudent);
 	}
 
-	public String getInstructor(String crn) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT instructor FROM courseInstances WHERE CRN = '" + crn + "';");
+	//if students table contains an entry with a banner
+	public boolean studentExists(String banner) throws SQLException {
+		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM student WHERE banner = '" + banner + "';");
 		rs.next();
-		// return rs.getString("instructor").substring(1,
-		// rs.getString("instructor").length() - 1);
-		return rs.getString("instructor");
+		// System.out.println("num: " + rs.getInt("total"));
+		return rs.getInt("total") == 1;
 	}
 
-	public String getCoursesTaughtByInstructorDuringSemester(String instructorName, String semester)
-			throws SQLException {
+	//returns the instructor who teaches crn and code
+	public String getInstructor(String crn, String code) throws SQLException {
+		ResultSet rs = stmt.executeQuery("SELECT name FROM instructorCoursesTaught WHERE CRN = '" + crn + "' and code = '" + code + "';");
+		rs.next();
+		return rs.getString("name");
+	}
+
+	//returns all CRN's taught by instructorName in semester
+	public String getCoursesTaughtByInstructorDuringSemester(String instructorName, String semester) throws SQLException {
 		String result = "";
 		ResultSet rs = stmt.executeQuery(
 				"select ci.CRN from instructor t inner join instructorcoursestaught ict on (t.name = ict.name) inner join courseInstances ci on (ict.CRN = ci.CRN) where t.name = '"
@@ -323,11 +329,12 @@ public class StudentCourseManager {
 		while (rs.next()) {
 			result += "," + rs.getString("CRN");
 		}
-		// return rs.getString("instructor").substring(1,
-		// rs.getString("instructor").length() - 1);
 		return result;
 	}
 
+	//returns the instructor that teaches a course with crn and code during a semester
+	//CRN and code are unique per semester for our data.
+	//this method is necessary to ensure that semesters are correct for CRN+code+instructor tuples
 	public String getInstructorForClassDuringSemester(String crn, String code, String semester) throws SQLException {
 		String result = "";
 		ResultSet rs = stmt.executeQuery(
@@ -340,18 +347,21 @@ public class StudentCourseManager {
 		return result;
 	}
 
-	public String getCodeFromCRN(String crn) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT code FROM courseInstances WHERE CRN = '" + crn + "';");
+	//ensure a course CRN+code exists
+	public boolean codeExistsForCRN(String crn, String code) throws SQLException {
+		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM courseInstances WHERE CRN = '" + crn + "' AND code = '" + code + "';");
 		rs.next();
-		return rs.getString("code");
+		return rs.getInt("total") > 0;
 	}
 
-	public String courseExists(String code) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT * FROM courseInstances WHERE code = '" + code + "';");
+	//ensure a course code is offered
+	public boolean courseExists(String code) throws SQLException {
+		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM courseInstances WHERE code = '" + code + "';");
 		rs.next();
-		return rs.getString("code");
+		return rs.getInt("total") > 0;
 	}
 
+	//get the semester of a course CRN+code
 	public String getSemester(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
 				"SELECT semester FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
@@ -360,6 +370,7 @@ public class StudentCourseManager {
 		return "no semester for CRN " + CRN + " and code " + code;
 	}
 
+	//get the days a course CRN+code is taught
 	public String getDays(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt
 				.executeQuery("SELECT days FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
@@ -368,6 +379,7 @@ public class StudentCourseManager {
 		return "no days for CRN " + CRN + " and code " + code;
 	}
 
+	//get the time course CRN+code starts
 	public String getStartTime(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
 				"SELECT startTime FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
@@ -376,6 +388,7 @@ public class StudentCourseManager {
 		return "no startTime for CRN " + CRN + " and code " + code;
 	}
 
+	//get the time course CRN+code ends
 	public String getEndTime(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
 				"SELECT endTime FROM courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
@@ -384,14 +397,20 @@ public class StudentCourseManager {
 		return "no endTime for CRN " + CRN + " and code " + code;
 	}
 
+	//get the building course CRN+code is taught in
 	public String getBuilding(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
 				"select building from courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
-		if (rs.next())
-			return rs.getString("building");
+		if (rs.next()) {
+			String temp = rs.getString("building");
+			rs.close();
+			return temp;
+		}
+		rs.close();
 		return "no building for CRN " + CRN + " and code " + code;
 	}
 
+	//get the room course CRN+code is taught in
 	public String getRoom(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt
 				.executeQuery("select room from courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
@@ -400,20 +419,26 @@ public class StudentCourseManager {
 		return "no room for CRN " + CRN + " and code " + code;
 	}
 
+	//get the max number of students course CRN+code allows to enroll
 	public int getMaxStudents(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
 				"select maxStudents from courseInstances where CRN = '" + CRN + "' and code = '" + code + "';");
-		if (rs.next())
-			return rs.getInt("maxStudents");
+		if (rs.next()) {
+			int temp = rs.getInt("maxStudents");
+			rs.close();
+			return temp;
+		}
+		rs.close();
 		System.out.println("no max students data for CRN " + CRN + " and code " + code);
 		return -1;
 	}
 
-	public String studentEnrolled(String crn, String code, String banner) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT banner FROM studentCoursesTaken where banner = '" + banner
+	//ensure student is enrolled in course CRN+code
+	public boolean studentEnrolled(String crn, String code, String banner) throws SQLException {
+		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM studentCoursesTaken where banner = '" + banner
 				+ "' and CRN = '" + crn + "' and code = '" + code + "';");
 		rs.next();
-		return rs.getString("banner");
+		return rs.getInt("total") > 0;
 	}
 
 	public String getClassification(String banner, String CRN, String code) throws SQLException {
@@ -503,25 +528,159 @@ public class StudentCourseManager {
 		return true;
 	}
 
-	/*public int getMaxSeats(String CRN, String code) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE "
-				+ "building = (SELECT building FROM courseInstances WHERE CRN = '" + CRN + "' and code = '" + code
-				+ "')" + " AND room = (SELECT room FROM courseInstances WHERE CRN = '" + CRN + "' and code = '" + code
-				+ "') " + "AND semester <= (SELECT semester FROM courseInstances WHERE CRN = '" + CRN + "' and code = '"
-				+ code + "') " + "order by maxStudents desc;");
-		if (rs.next())
-			return rs.getInt("maxStudents");
-		System.out.println("no valid data for CRN " + CRN + " and code " + code);
-		return -1;
-	}*/
-	
+	/*
+	 * public int getMaxSeats(String CRN, String code) throws SQLException {
+	 * ResultSet rs =
+	 * stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE " +
+	 * "building = (SELECT building FROM courseInstances WHERE CRN = '" + CRN +
+	 * "' and code = '" + code + "')" +
+	 * " AND room = (SELECT room FROM courseInstances WHERE CRN = '" + CRN +
+	 * "' and code = '" + code + "') " +
+	 * "AND semester <= (SELECT semester FROM courseInstances WHERE CRN = '" +
+	 * CRN + "' and code = '" + code + "') " + "order by maxStudents desc;"); if
+	 * (rs.next()) return rs.getInt("maxStudents");
+	 * System.out.println("no valid data for CRN " + CRN + " and code " + code);
+	 * return -1; }
+	 */
+
 	public int getMaxSeats(String building, String room) throws SQLException {
-		ResultSet rs = stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE "
-				+ "building = '" + building + "' AND room = '" + room + "' order by maxStudents desc;");
-		if (rs.next())
-			return rs.getInt("maxStudents");
+		ResultSet rs = stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE " + "building = '" + building
+				+ "' AND room = '" + room + "' order by maxStudents desc;");
+		if (rs.next()) {
+			int temp = rs.getInt("maxStudents");
+			rs.close();
+			return temp;
+		}
+		rs.close();
 		System.out.println("no valid data for building " + building + " and room " + room);
 		return -1;
+	}
+	
+	public String getAllCandidateRooms(String CRN, String code) throws SQLException {
+		//for 11041 CS120 the equivalent query would be:
+		//SELECT distinct(room) as dRoom FROM courseInstances WHERE building = 'MBB' AND maxStudents >= 30 ORDER BY dRoom;
+		
+		String allRooms = "";
+		String building = getBuilding(CRN, code);
+		
+		Statement stmt2 = conn.createStatement();
+		ResultSet rs = stmt2.executeQuery("SELECT distinct(room) AS dRoom FROM courseInstances WHERE"
+				+ " building = '" + building + "' order by dRoom;");
+		while (rs.next()) {
+			String nextRoom = rs.getString("dRoom");
+			if (getMaxSeats(building, nextRoom) >= getMaxStudents(CRN, code)) {
+				allRooms += nextRoom + ",";
+			}
+		}
+		//System.out.println("no valid data for building " + building + " and room " + room);
+		return allRooms;
+		
+		
+		//select distinct(room) as dRoom from courseInstances where building = (select building from courseInstances where CRN = '11041' and code = 'CS120') order by dRoom;
+	}
+	
+	public boolean roomIsFree(String building, String room, String semester, String days, String start, String end) throws SQLException {
+		String query = "SELECT CRN, code, startTime, endTime, days FROM courseInstances WHERE building = '" + building + "' AND room = '" + room + "' and semester = '" + semester + "' and (";
+		for (char c : days.toCharArray()) {
+			query += "days LIKE '%" + c + "%' OR ";
+		}
+		query = query.substring(0, query.lastIndexOf(" OR ")) + ") order by startTime;";
+
+		ResultSet rs = stmt.executeQuery(query);
+		while (rs.next()) {
+			int sT = Integer.parseInt(rs.getString("startTime")); // start time
+			int eT = Integer.parseInt(rs.getString("endTime")); // end time
+			int asT = Integer.parseInt(start); // argument start time
+			int aeT = Integer.parseInt(end); // argument end time
+			if (!(aeT < sT || asT > eT))
+				return false;
+		}
+		return true;
+	}
+	
+	public String getAllOpenTimes(String building, String room, String semester, String days, int timeLength) throws SQLException {
+		String allTimes = "";
+		Map<String, String> badTimes = new LinkedHashMap<String, String>();
+		
+		String query = "SELECT CRN, code, startTime, endTime, days FROM courseInstances WHERE building = '" + building + "' AND room = '" + room + "' and semester = '" + semester + "' and (";
+		for (char c : days.toCharArray()) {
+			query += "days LIKE '%" + c + "%' OR ";
+		}
+		query = query.substring(0, query.lastIndexOf(" OR ")) + ") order by startTime;";
+		
+		Statement stmt2 = conn.createStatement();
+		ResultSet rs = stmt2.executeQuery(query);
+		while (rs.next()) {
+			badTimes.put(getStartTime(rs.getString("CRN"), rs.getString("code")), getEndTime(rs.getString("CRN"), rs.getString("code")));
+		}
+		
+		//only dealing with 50 and 80 minute classes right now		
+		DateFormat df = new SimpleDateFormat("HHmm");
+		Date dateobj1 = new Date(0, 0, 0, 8, 0);
+		Date dateobj2;
+		if (timeLength == 50) {
+			dateobj2 = new Date(0, 0, 0, 8, 50);
+		} else {
+			dateobj2 = new Date(0, 0, 0, 9, 20);
+		}
+		
+		
+		//System.out.println(df.format(dateobj1));
+		while (dateobj1.getHours() < 17 && dateobj2.getHours() <= 17) {
+			boolean conflict = false;
+			String timeS = df.format(dateobj1);
+			String timeE = df.format(dateobj2);
+			
+			Iterator it = badTimes.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry pair = (Map.Entry) it.next();
+				//System.out.println(pair.getKey() + " = " + pair.getValue());
+				int sT = Integer.parseInt((String) pair.getKey()); // start time
+				int eT = Integer.parseInt((String) pair.getValue()); // end time
+				int asT = Integer.parseInt(timeS); // argument start time
+				int aeT = Integer.parseInt(timeE); // argument end time
+				
+				//System.out.println("course: " + sT + "-" + eT);
+				//System.out.println("sample: " + asT + "-" + aeT);
+				
+				conflict = conflict || !(aeT < sT || asT > eT);
+				//it.remove(); // avoids a ConcurrentModificationException
+			}
+			
+			if (!conflict) {
+				allTimes += timeS + "-" + timeE + ",";
+			}
+			
+			//System.out.println(df.format(dateobj1));
+			if (timeLength == 50) {
+				dateobj1.setHours(dateobj1.getHours() + 1);
+				dateobj2.setHours(dateobj2.getHours() + 1);
+			} else {
+				dateobj1.setMinutes(dateobj1.getMinutes() + 30);
+				dateobj1.setHours(dateobj1.getHours() + 1);
+				dateobj2.setMinutes(dateobj2.getMinutes() + 30);
+				dateobj2.setHours(dateobj2.getHours() + 1);
+			}
+		}
+		/*while (t.getHours() < 17) {
+			System.out.println(t.getTime());
+			if (timeLength == 50) {
+				t.setHours(t.getHours() + 1);
+			} else {
+				t.setMinutes(t.getMinutes() + 30);
+				t.setHours(t.getHours() + 1);
+			}
+		}*/
+		
+		/*boolean conflict = false;
+		Iterator it = badTimes.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+			System.out.println(pair.getKey() + " = " + pair.getValue());
+			it.remove(); // avoids a ConcurrentModificationException
+		}*/
+		return allTimes;
+		//select CRN, code, startTime, endTime, days from courseInstances where building = 'MBB' and room = '314' and semester = '201510' and (days LIKE '%M%' or days LIKE '%W%' or days LIKE '%F%') order by startTime;
 	}
 
 	private static String[] newSplit(String str) {
