@@ -143,4 +143,14 @@ public class MoveTest {
 	public void buildingRoomIsFreeDuringSemesterOnDaysForMinutes(String building, String room, String times, String semester, String days, int time) throws Throwable {
 		assertEquals(scm.getAllOpenTimes(building, room, semester, days, time), times);
 	}
+	
+	@Then("^students \"([^\"]*)\" can attend CRN \"([^\"]*)\" for course \"([^\"]*)\" in semester \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\"$")
+	public void studentsCanAttendCRNForCourseInSemesterOnDaysFromTo(String students, String CRN, String code, String semester, String days, String start, String end) throws Throwable {
+	    assertEquals(scm.studentsCanAttend(CRN, code, semester, days, start, end), students);
+	}
+
+	@Then("^students \"([^\"]*)\" cannot attend CRN \"([^\"]*)\" for course \"([^\"]*)\" in semester \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\"$")
+	public void studentsCannotAttendCRNForCourseInSemesterOnDaysFromTo(String students, String CRN, String code, String semester, String days, String start, String end) throws Throwable {
+		assertEquals(scm.studentsCannotAttend(CRN, code, semester, days, start, end), students);
+	}
 }

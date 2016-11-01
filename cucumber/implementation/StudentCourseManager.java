@@ -685,6 +685,36 @@ public class StudentCourseManager {
 		//select CRN, code, startTime, endTime, days from courseInstances where building = 'MBB' and room = '314' and semester = '201510' and (days LIKE '%M%' or days LIKE '%W%' or days LIKE '%F%') order by startTime;
 	}
 
+	public String studentsCanAttend(String CRN, String code, String semester, String days, String start, String end) throws SQLException {
+		String allStudents = "";
+		
+		Statement stmt2 = conn.createStatement();
+		ResultSet rs = stmt2.executeQuery("SELECT banner FROM studentCoursesTaken WHERE CRN = '" + CRN
+				+ "' AND code = '" + code + "';");
+		while (rs.next()) {
+			String temp = rs.getString("banner");
+			allStudents += (studentIsFree(temp, semester, days, start, end) ? temp + "," : "");
+		}
+		rs.close();
+		
+		return allStudents;
+	}
+	
+	public String studentsCannotAttend(String CRN, String code, String semester, String days, String start, String end) throws SQLException {
+		String allStudents = "";
+		
+		Statement stmt2 = conn.createStatement();
+		ResultSet rs = stmt2.executeQuery("SELECT banner FROM studentCoursesTaken WHERE CRN = '" + CRN
+				+ "' AND code = '" + code + "';");
+		while (rs.next()) {
+			String temp = rs.getString("banner");
+			allStudents += (studentIsFree(temp, semester, days, start, end) ? "" : temp + ",");
+		}
+		rs.close();
+		
+		return allStudents;
+	}
+	
 	private static String[] newSplit(String str) {
 		// guaranteed to have 147 columns; any more are a mistake and/or not
 		// meaningful
