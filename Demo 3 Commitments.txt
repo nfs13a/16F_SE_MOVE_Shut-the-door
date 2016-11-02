@@ -1,0 +1,8 @@
+We will be able to list the top 5 best options for moving a class to a new time and/or room, including which students can and cannot attend.
+
+We will develop a method or running the tool outside of cucumber
+
+	-prompt for mysql password
+	-prompt for if database has been filled yet
+
+We will eliminate (1100-1159) from the times considered for moving a class

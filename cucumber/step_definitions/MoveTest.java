@@ -153,4 +153,20 @@ public class MoveTest {
 	public void studentsCannotAttendCRNForCourseInSemesterOnDaysFromTo(String students, String CRN, String code, String semester, String days, String start, String end) throws Throwable {
 		assertEquals(scm.studentsCannotAttend(CRN, code, semester, days, start, end), students);
 	}
+	
+	/*@Then("^the best option for CRN \"([^\"]*)\" for course \"([^\"]*)\" is room \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\" by weight (\\d+)$")
+	public void theBestOptionForCRNForCourseIsRoomFromToByWeight(String CRN, String code, String room, String start, String end, int weight) throws Throwable {
+	    assertEquals(scm.getBestRoom(CRN, code), room);
+	    assertEquals(scm.getBestRoom(CRN, code), days);
+	    assertEquals(scm.getBestTime(CRN, code), start + "-" + end);
+	    assertEquals(scm.getBestRoom(CRN, code), weight);
+	}*/
+	
+	@Then("^the best option for CRN \"([^\"]*)\" for course \"([^\"]*)\" is room \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\" by weight (\\d+)$")
+	public void theBestOptionForCRNForCourseIsRoomOnDaysFromToByWeight(String CRN, String code, String room, String days, String start, String end, int weight) throws Throwable {
+		scm.setAlternates(CRN, code);
+		assertEquals(scm.getBestRoom(), room);
+	    assertEquals(scm.getBestDays(), days);
+	    assertEquals(scm.getBestTime(), start + "-" + end);
+	}
 }

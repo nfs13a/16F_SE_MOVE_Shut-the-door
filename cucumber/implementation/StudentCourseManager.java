@@ -13,6 +13,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,6 +45,9 @@ public class StudentCourseManager {
 	private static Vector<String> allSCTs; // studentCoursesTaken
 	private static Vector<String> allIs; // instructor
 	private static Vector<String> allICTs; // instructorCoursesTaught
+	
+	PQsort pqs = new PQsort();	//used to compare priorities of pq
+	PriorityQueue<AlternateSession> pq = new PriorityQueue<AlternateSession>(10, pqs);
 
 	public StudentCourseManager(String CSV) { // argument must include the
 												// ".csv" extension if it is a
@@ -633,6 +638,21 @@ public class StudentCourseManager {
 			String timeS = df.format(dateobj1);
 			String timeE = df.format(dateobj2);
 			
+			int numS = Integer.parseInt(timeS);
+			int numE = Integer.parseInt(timeS);
+			if (numS >= 1100 && numS < 1200 || numE >= 1100 && numE < 1200) {
+				if (timeLength == 50) {
+					dateobj1.setHours(dateobj1.getHours() + 1);
+					dateobj2.setHours(dateobj2.getHours() + 1);
+				} else {
+					dateobj1.setMinutes(dateobj1.getMinutes() + 30);
+					dateobj1.setHours(dateobj1.getHours() + 1);
+					dateobj2.setMinutes(dateobj2.getMinutes() + 30);
+					dateobj2.setHours(dateobj2.getHours() + 1);
+				}
+				continue;
+			}
+			
 			Iterator it = badTimes.entrySet().iterator();
 			while (it.hasNext()) {
 				Map.Entry pair = (Map.Entry) it.next();
@@ -715,6 +735,105 @@ public class StudentCourseManager {
 		return allStudents;
 	}
 	
+	public void setAlternates(String CRN, String code) throws SQLException {
+		Statement stmt2 = conn.createStatement();
+		ResultSet rs = stmt2.executeQuery("SELECT * FROM courseInstances ci inner join instructorCoursesTaught ict on ci.CRN = '" + CRN + "' and ci.code = '" + code + "' and ci.CRN = ict.CRN and ci.code = ict.code;");
+		rs.next();
+		String semester = rs.getString("ci.semester");
+		String building = rs.getString("ci.building");
+		String instructor = rs.getString("ict.name");
+		
+		//weight will be the priority
+		String room[] = getAllCandidateRooms(CRN, code).split(",");
+		
+		//test for MWF times
+		for (String r : room) {
+			String times[] = getAllOpenTimes(building, r, semester, "MWF", 50).split(",");
+			for (String t : times) {
+				String start = t.substring(0, t.indexOf("-"));
+				String end = t.substring(t.indexOf("-") + 1);
+				if (instructorIsFree(instructor, semester, "MWF", start, end)) {
+					String bannersCan = studentsCanAttend(CRN, code, semester, "MWF", start, end);
+					String bannersCannot = studentsCannotAttend(CRN, code, semester, "MWF", start, end);
+					int weight = 0;
+					for (String bc : bannersCan.split(",")) {
+						Statement stmt3 = conn.createStatement();
+						rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bc + "' and CRN = '" + CRN + "' and code = '" + code + "';");
+						rs.next();
+						weight += convertClassification(rs.getString("classification"));
+					}
+					
+					for (String bct : bannersCannot.split(",")) {
+						Statement stmt3 = conn.createStatement();
+						rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bct + "' and CRN = '" + CRN + "' and code = '" + code + "';");
+						rs.next();
+						weight -= convertClassification(rs.getString("classification"));
+					}
+					
+					pq.add(new AlternateSession(r, start, end, "MWF", weight, bannersCan, bannersCannot));
+				}
+			}
+		}
+		
+		//test for TR times
+		for (String r : room) {
+			String times[] = getAllOpenTimes(building, r, semester, "TR", 50).split(",");
+			for (String t : times) {
+				String start = t.substring(0, t.indexOf("-"));
+				String end = t.substring(t.indexOf("-") + 1);
+				if (instructorIsFree(instructor, semester, "TR", start, end)) {
+					String bannersCan = studentsCanAttend(CRN, code, semester, "TR", start, end);
+					String bannersCannot = studentsCannotAttend(CRN, code, semester, "TR", start, end);
+					int weight = 0;
+					for (String bc : bannersCan.split(",")) {
+						Statement stmt3 = conn.createStatement();
+						rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bc + "' and CRN = '" + CRN + "' and code = '" + code + "';");
+						rs.next();
+						weight += convertClassification(rs.getString("classification"));
+					}
+					
+					for (String bct : bannersCannot.split(",")) {
+						Statement stmt3 = conn.createStatement();
+						rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bct + "' and CRN = '" + CRN + "' and code = '" + code + "';");
+						rs.next();
+						weight -= convertClassification(rs.getString("classification"));
+					}
+					
+					pq.add(new AlternateSession(r, start, end, "MWF", weight, bannersCan, bannersCannot));
+				}
+			}
+		}
+		
+		/*AlternateSession temp = pq.peek();
+		System.out.println("Room: " + temp.getRoom());
+		System.out.println("Start: " + temp.getStart());
+		System.out.println("End: " + temp.getEnd());
+		System.out.println("Days: " + temp.getDays());
+		System.out.println("Can: " + temp.getCan());
+		System.out.println("Cannot: " + temp.getCannot());
+		System.out.println("Weight: " + temp.getWeight());*/
+		
+//		/return pq.poll().getRoom();
+	}
+	
+	public String getBestRoom() {
+		return pq.peek().getRoom();
+	}
+	
+	public String getBestDays() {
+		return pq.peek().getDays();
+	}
+	
+	public String getBestTime() {
+		return pq.peek().getStart() + "-" + pq.peek().getEnd();
+	}
+	
+	/*
+	 * public String getTop5() {
+	 * 		//will call all getBest____ and then poll
+	 * }
+	 */
+	
 	private static String[] newSplit(String str) {
 		// guaranteed to have 147 columns; any more are a mistake and/or not
 		// meaningful
@@ -787,7 +906,7 @@ public class StudentCourseManager {
 		return newStrings;
 	}
 
-	private int convertClassification(String c) {
+	public static int convertClassification(String c) {
 		if (c.equals("FR"))
 			return 1;
 		else if (c.equals("SO"))
@@ -799,5 +918,63 @@ public class StudentCourseManager {
 		else if (c.equals("GR"))
 			return 5;
 		return 0;
+	}
+}
+
+class AlternateSession {
+	
+	//String building; should not be necessary
+	String room;
+	String start;
+	String end;
+	String days;	//MWF or TR
+	//String semester; should not be necessary
+	int weight; 	//see SCM convertClassification for weights of classifications
+	String bannersCan;
+	String bannersCannot;
+	
+	public AlternateSession(String room, String start, String end, String days, int weight, String bannersCan, String bannersCannot) {
+		this.room = room;
+		this.start = start;
+		this.end = end;
+		this.days = days;
+		this.weight = weight;
+		this.bannersCan = bannersCan;
+		this.bannersCannot = bannersCannot;
+	}
+	
+	public String getRoom() {
+		return room;
+	}
+	
+	public String getStart() { 
+		return start;
+	}
+	
+	public String getEnd() {
+		return end;
+	}
+	
+	public String getDays() {
+		return days;
+	}
+	
+	public String getCan() {
+		return bannersCan;
+	}
+	
+	public String getCannot() {
+		return bannersCannot;
+	}
+	
+	public int getWeight() {
+		return weight;
+	}
+}
+
+class PQsort implements Comparator<AlternateSession> {
+	 
+	public int compare(AlternateSession one, AlternateSession two) {
+		return two.getWeight() - one.getWeight();
 	}
 }
