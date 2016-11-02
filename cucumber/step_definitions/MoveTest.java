@@ -168,5 +168,22 @@ public class MoveTest {
 		assertEquals(scm.getBestRoom(), room);
 	    assertEquals(scm.getBestDays(), days);
 	    assertEquals(scm.getBestTime(), start + "-" + end);
+		scm.getTopFour();
+	}
+	
+	/*@Then("^the option with the most students for CRN \"([^\"]*)\" for course \"([^\"]*)\" is room \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\" by weight (\\d+)$")
+	public void theOptionWithTheMostStudentsForCRNForCourseIsRoomOnDaysFromToByWeight(String CRN, String code, String room, String days, String start, String end, int weight) throws Throwable {
+		scm.setAlternates(CRN, code);
+		assertEquals(scm.getMostStudents)
+	}*/
+	
+	@Then("^the option with the most students for CRN \"([^\"]*)\" for course \"([^\"]*)\" is room \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\" with number of students (\\d+)$")
+	public void theOptionWithTheMostStudentsForCRNForCourseIsRoomOnDaysFromToWithNumberOfStudents(String CRN, String code, String room, String days, String start, String end, int numStudents) throws Throwable {
+		scm.setAlternates(CRN, code);
+		assertEquals(scm.getMostStudentsRoom(), room);
+		assertEquals(scm.getMostStudentsDays(), days);
+		assertEquals(scm.getMostStudentsTime(), start + "-" + end);
+		assertEquals(scm.getMostStudentsCount(), numStudents);
+		scm.getMostStudentsAlternate();
 	}
 }

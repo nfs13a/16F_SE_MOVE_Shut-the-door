@@ -116,3 +116,8 @@ Feature: Move a course instance from day+time to another
 		Given database courses
 		And CRN "11041" for course "CS120" can fit in rooms "115,116,117,118,201,215,216,217,218,301,314,315,316,318,"
 		Then the best option for CRN "11041" for course "CS120" is room "115" on days "MWF" from "1200" to "1250" by weight 38
+
+	#has a student with a classification of "SU" which stands for special undergraduate
+	Scenario: the best option for moving 10893 PSYC120
+		Given database courses
+		Then the option with the most students for CRN "10893" for course "PSYC120" is room "200" on days "TR" from "1200" to "1250" with number of students 169
