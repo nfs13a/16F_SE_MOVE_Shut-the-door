@@ -46,13 +46,11 @@ public class StudentCourseManager {
 	private static Vector<String> allIs; // instructor
 	private static Vector<String> allICTs; // instructorCoursesTaught
 	
-	PQsort pqs = new PQsort();	//used to compare priorities of pq
-	PriorityQueue<AlternateSession> pq = new PriorityQueue<AlternateSession>(10, pqs);
-	AlternateSession mostStudentsAlternate = new AlternateSession("", "", "", "", -1, "", "", new int[5], -1);
+	PQsort pqs;// = new PQsort();	used to compare priorities of AlternateSessions to be pushed into pq
+	PriorityQueue<AlternateSession> pq;// = new PriorityQueue<AlternateSession>(10, pqs);	holds all alternate sessions for a given course CRN+code
+	AlternateSession mostStudentsAlternate;// = new AlternateSession("", "", "", "", -1, "", "", new int[5], -1, -1);	//holds the alternate session for a given course CRN+code that has the most students that can attend
 
-	public StudentCourseManager(String CSV) { // argument must include the
-												// ".csv" extension if it is a
-												// filename
+	public StudentCourseManager(String CSV) { // argument must include the ".csv" extension if it is a filename
 		if (CSV.equals("big")) // use the csv given by Dr. Reeves
 			csvPath = lol + "/implementation/cs374_anon.csv";
 		else // use the test csv filename entered
@@ -64,8 +62,31 @@ public class StudentCourseManager {
 		allSCTs = new Vector<String>();
 		allIs = new Vector<String>();
 		allICTs = new Vector<String>();
+		
+		pqs = new PQsort();
+		pq = new PriorityQueue<AlternateSession>(10, pqs);
+		mostStudentsAlternate = new AlternateSession("", "", "", "", -1, "", "", new int[5], -1, -1);
 	}
-	
+
+	// used when the "big" csv has already been parsed and inserted
+	// will only execute the update of "use courses"
+	public StudentCourseManager() throws SQLException {
+		//established connection
+		connectToDatabase();
+		stmt.executeUpdate("USE COURSES;");
+
+		// initialize all primary key vectors
+		allBanners = new Vector<String>();
+		allCIs = new Vector<String>();
+		allSCTs = new Vector<String>();
+		allIs = new Vector<String>();
+		allICTs = new Vector<String>();
+		
+		pqs = new PQsort();
+		pq = new PriorityQueue<AlternateSession>(10, pqs);
+		mostStudentsAlternate = new AlternateSession("", "", "", "", -1, "", "", new int[5], -1, -1);
+	}
+
 	private static void connectToDatabase() throws SQLException {
 		final String DB_URL = "jdbc:mysql://localhost/";
 
@@ -88,22 +109,7 @@ public class StudentCourseManager {
 		//initializes Statement class object
 		stmt = conn.createStatement();
 	}
-
-	// used when the "big" csv has already been parsed and inserted
-	// will only execute the update of "use courses"
-	public StudentCourseManager() throws SQLException {
-		//established connection
-		connectToDatabase();
-		stmt.executeUpdate("USE COURSES;");
-
-		// initialize all primary key vectors
-		allBanners = new Vector<String>();
-		allCIs = new Vector<String>();
-		allSCTs = new Vector<String>();
-		allIs = new Vector<String>();
-		allICTs = new Vector<String>();
-	}
-
+	
 	public void parseCRN() {
 		try {
 			// sets up parsing data
@@ -127,7 +133,7 @@ public class StudentCourseManager {
 				 * Column 													| Number in stuff array 
 				 * CRN: 5 digit number 										| 35
 				 * Subject_Code: * 2-4 string all caps 						| 40 
-				 * Course_Number: 100-599? 									| 42 
+				 * Course_Number: 100-799? 									| 42 
 				 * Instructor_Name: literally "Last, First" 				| 50
 				 * Grade_Code: only A-D, F, W, and maybe WF 				| 55 
 				 * Banner_ID: 9 digit number but usually 3-4 leading 0's 	| 56 
@@ -313,7 +319,6 @@ public class StudentCourseManager {
 	public boolean studentExists(String banner) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM student WHERE banner = '" + banner + "';");
 		rs.next();
-		// System.out.println("num: " + rs.getInt("total"));
 		return rs.getInt("total") == 1;
 	}
 
@@ -348,8 +353,7 @@ public class StudentCourseManager {
 						+ crn + "' and ict.code = '" + code + "' and ci.semester = '" + semester + "';");
 		rs.next();
 		result = rs.getString("name");
-		// return rs.getString("instructor").substring(1,
-		// rs.getString("instructor").length() - 1);
+		// return rs.getString("instructor").substring(1, rs.getString("instructor").length() - 1);
 		return result;
 	}
 
@@ -447,6 +451,7 @@ public class StudentCourseManager {
 		return rs.getInt("total") > 0;
 	}
 
+	//gets classification (FR, SO, JR, SR, GR, SU) of student when taking a course CRN+code, which exists exclusively in a unique semester
 	public String getClassification(String banner, String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken where banner = '" + banner
 				+ "' and CRN = '" + CRN + "' and code = '" + code + "';");
@@ -455,6 +460,7 @@ public class StudentCourseManager {
 		return "no classification for given data";
 	}
 
+	//gets classification (FR, SO, JR, SR, GR, SU) of student during a semester
 	public String getClassification(String banner, String semester) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
 				"SELECT s.banner, s.CRN, s.code, s.classification, c.semester FROM studentCoursesTaken AS s INNER JOIN courseInstances AS c ON s.banner = '"
@@ -464,48 +470,55 @@ public class StudentCourseManager {
 		return "no classification for given data";
 	}
 
+	//ensure an instructor exists
 	public boolean instructorExists(String name) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM instructor WHERE name = '" + name + "';");
 		rs.next();
-		// System.out.println("num: " + rs.getInt("total"));
 		return rs.getInt("total") == 1;
 	}
 
+	//checks if a student is free in a semester on some days (any permutation of 'MTWRF') during a range of time
 	public boolean studentIsFree(String banner, String semester, String days, String start, String end)
 			throws SQLException {
 		String query = "select ci.startTime, ci.endTime from studentCoursesTaken sct inner join courseInstances ci on sct.CRN = ci.CRN and sct.code = ci.code and sct.banner = '"
 				+ banner + "' and ci.semester = '" + semester + "' and (";
+		
+		//days LIKE '%*day-char*%' searches for any entry that contains *day-char* in the days column 
 		for (char c : days.toCharArray()) {
 			query += "ci.days LIKE '%" + c + "%' OR ";
 		}
 
+		//loop adds an extra OR and a space, so remove it here
 		query = query.substring(0, query.lastIndexOf(" OR"));
 
+		//order by startTime to make comparisons easy to follow
 		query += ") order by ci.startTime;";
 
-		// System.out.println("days query: " + query);
-
 		ResultSet rs = stmt.executeQuery(query);
+		//loop through all times that the students has classes during the semester
 		while (rs.next()) {
-			int sT = Integer.parseInt(rs.getString("ci.startTime")); // start
-																		// time
+			int sT = Integer.parseInt(rs.getString("ci.startTime")); // start time
 			int eT = Integer.parseInt(rs.getString("ci.endTime")); // end time
-			int asT = Integer.parseInt(start); // argument start time
-			int aeT = Integer.parseInt(end); // argument end time
-			// System.out.println(sT + " and " + eT + " vs " + asT + " and " +
-			// aeT);
+			int asT = Integer.parseInt(start); // argument start time	--	the start time of the block during which we want to know if the student is free
+			int aeT = Integer.parseInt(end); // argument end time --	the end time of the block during which we want to know if the student is free
+			
+			/* 
+			 * if the start time of the test (argument) block is after the end time of a class 
+			 * or if the start time of the test (argument) block is before the start time of a class, 
+			 * then there is not necessarily a conflict
+			 * therefore if this is not true, then there must be a conflict, so report it
+			 */
 			if (!(aeT < sT || asT > eT)) {
 				return false;
 			}
-			// return true;
 		}
-		// System.out.println("No courses for banner "+banner+" in semester
-		// "+semester);return true;
+		// System.out.println("No courses for banner "+banner+" in semester " + semester);
 		return true;
 	}
 
 	public boolean instructorIsFree(String name, String semester, String days, String start, String end)
 			throws SQLException {
+		//works the same as studentIsFree() above, but for an instructor
 		String query = "select ci.startTime, ci.endTime from instructorCoursesTaught Ict inner join courseInstances ci on ict.CRN = ci.CRN and ict.code = ci.code and ict.name = '"
 				+ name + "' and ci.semester = '" + semester + "' and (";
 		for (char c : days.toCharArray()) {
@@ -515,8 +528,6 @@ public class StudentCourseManager {
 		query = query.substring(0, query.lastIndexOf(" OR"));
 
 		query += ") order by ci.startTime;";
-
-		// System.out.println("days query: " + query);
 
 		ResultSet rs = stmt.executeQuery(query);
 		while (rs.next()) {
@@ -529,29 +540,19 @@ public class StudentCourseManager {
 			if (!(aeT < sT || asT > eT))
 				return false;
 		}
-		// System.out.println("No courses for name " + name + " in semester " +
-		// semester);
+		// System.out.println("No courses for name " + name + " in semester " + semester);
 		return true;
 	}
 
-	/*
-	 * public int getMaxSeats(String CRN, String code) throws SQLException {
-	 * ResultSet rs =
-	 * stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE " +
-	 * "building = (SELECT building FROM courseInstances WHERE CRN = '" + CRN +
-	 * "' and code = '" + code + "')" +
-	 * " AND room = (SELECT room FROM courseInstances WHERE CRN = '" + CRN +
-	 * "' and code = '" + code + "') " +
-	 * "AND semester <= (SELECT semester FROM courseInstances WHERE CRN = '" +
-	 * CRN + "' and code = '" + code + "') " + "order by maxStudents desc;"); if
-	 * (rs.next()) return rs.getInt("maxStudents");
-	 * System.out.println("no valid data for CRN " + CRN + " and code " + code);
-	 * return -1; }
-	 */
-
+	//gets the max number of seats in a room in a building
+	//estimates this data from the largest maxStudents value of a class in that room
 	public int getMaxSeats(String building, String room) throws SQLException {
+		//gets all maxStudents values from courses in that building and room
+		//values are ordered from greatest to least
 		ResultSet rs = stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE " + "building = '" + building
 				+ "' AND room = '" + room + "' order by maxStudents desc;");
+		//returns the first value if it exists
+		//works because of the ordering of the query
 		if (rs.next()) {
 			int temp = rs.getInt("maxStudents");
 			rs.close();
@@ -562,19 +563,21 @@ public class StudentCourseManager {
 		return -1;
 	}
 	
+	//gets all rooms that can fit a course CRN+code
 	public String getAllCandidateRooms(String CRN, String code) throws SQLException {
 		//for 11041 CS120 the equivalent query would be:
 		//SELECT distinct(room) as dRoom FROM courseInstances WHERE building = 'MBB' AND maxStudents >= 30 ORDER BY dRoom;
 		
-		String allRooms = "";
-		String building = getBuilding(CRN, code);
+		String allRooms = "";	//will store all the rooms the course can fit in, comma separated
+		String building = getBuilding(CRN, code);	//gets the building of the course
 		
+		//gets all rooms from the building of the course
 		Statement stmt2 = conn.createStatement();
 		ResultSet rs = stmt2.executeQuery("SELECT distinct(room) AS dRoom FROM courseInstances WHERE"
 				+ " building = '" + building + "' order by dRoom;");
-		while (rs.next()) {
+		while (rs.next()) {	//loop through all rooms
 			String nextRoom = rs.getString("dRoom");
-			if (getMaxSeats(building, nextRoom) >= getMaxStudents(CRN, code)) {
+			if (getMaxSeats(building, nextRoom) >= getMaxStudents(CRN, code)) {	//if the max seats of the room is at least the max students of the course, append the room to allRooms
 				allRooms += nextRoom + ",";
 			}
 		}
@@ -585,7 +588,9 @@ public class StudentCourseManager {
 		//select distinct(room) as dRoom from courseInstances where building = (select building from courseInstances where CRN = '11041' and code = 'CS120') order by dRoom;
 	}
 	
+	//determines if a room is free during a semester on certain days from one time until another
 	public boolean roomIsFree(String building, String room, String semester, String days, String start, String end) throws SQLException {
+		//works just like studentIsFree, but for rooms
 		String query = "SELECT CRN, code, startTime, endTime, days FROM courseInstances WHERE building = '" + building + "' AND room = '" + room + "' and semester = '" + semester + "' and (";
 		for (char c : days.toCharArray()) {
 			query += "days LIKE '%" + c + "%' OR ";
@@ -604,7 +609,9 @@ public class StudentCourseManager {
 		return true;
 	}
 	
-	public String getAllOpenTimes(String building, String room, String semester, String days, int timeLength) throws SQLException {
+	//gets all the times that a room is free during a semester on certain days
+	public String getAllOpenTimes(String building, String room, String semester, String days) throws SQLException {	//extra argument int timelength if not just doing MWF and TR classes with normal time constraints
+		int timeLength = days.equals("MWF") ? 50 : 80;	//MWF classes are 50 minutes, TR classes are 80 minutes, and all others are not considered currently
 		String allTimes = "";
 		Map<String, String> badTimes = new LinkedHashMap<String, String>();
 		
@@ -626,7 +633,7 @@ public class StudentCourseManager {
 		Date dateobj2;
 		if (timeLength == 50) {
 			dateobj2 = new Date(0, 0, 0, 8, 50);
-		} else if (timeLength == 90) {
+		} else if (timeLength == 80) {
 			dateobj2 = new Date(0, 0, 0, 9, 20);
 		} else {
 			return "Invalid length of class session given current constraints";
@@ -639,9 +646,10 @@ public class StudentCourseManager {
 			String timeS = df.format(dateobj1);
 			String timeE = df.format(dateobj2);
 			
+			//rooms cannot be free for a class during chapel, so prevents checking
 			int numS = Integer.parseInt(timeS);
 			int numE = Integer.parseInt(timeS);
-			if (numS >= 1100 && numS < 1200 || numE >= 1100 && numE < 1200) {
+			if (numS >= 1100 && numS < 1200 || numE >= 1100 && numE < 1200 || numS < 1100 && numE > 1159) {
 				if (timeLength == 50) {
 					dateobj1.setHours(dateobj1.getHours() + 1);
 					dateobj2.setHours(dateobj2.getHours() + 1);
@@ -685,23 +693,6 @@ public class StudentCourseManager {
 				dateobj2.setHours(dateobj2.getHours() + 1);
 			}
 		}
-		/*while (t.getHours() < 17) {
-			System.out.println(t.getTime());
-			if (timeLength == 50) {
-				t.setHours(t.getHours() + 1);
-			} else {
-				t.setMinutes(t.getMinutes() + 30);
-				t.setHours(t.getHours() + 1);
-			}
-		}*/
-		
-		/*boolean conflict = false;
-		Iterator it = badTimes.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry) it.next();
-			System.out.println(pair.getKey() + " = " + pair.getValue());
-			it.remove(); // avoids a ConcurrentModificationException
-		}*/
 		return allTimes;
 		//select CRN, code, startTime, endTime, days from courseInstances where building = 'MBB' and room = '314' and semester = '201510' and (days LIKE '%M%' or days LIKE '%W%' or days LIKE '%F%') order by startTime;
 	}
@@ -737,8 +728,12 @@ public class StudentCourseManager {
 	}
 	
 	private void pushToPQ(String CRN, String code, String semester, String days, String building, String room, String instructor) throws SQLException {
-		String times[] = getAllOpenTimes(building, room, semester, days, 50).split(",");
+		String times[] = getAllOpenTimes(building, room, semester, days).split(",");
 		for (String t : times) {
+			if (t.length() != 9) {
+				//System.out.println("time: '" + t + "'");
+				continue;
+			}
 			String start = t.substring(0, t.indexOf("-"));
 			String end = t.substring(t.indexOf("-") + 1);
 			if (instructorIsFree(instructor, semester, days, start, end)) {
@@ -746,24 +741,26 @@ public class StudentCourseManager {
 				String bannersCannot = studentsCannotAttend(CRN, code, semester, days, start, end);
 				int weight = 0;
 				int stus[] = {0,0,0,0,0};
-				int totalStus = 0;
+				int totalStusCan = 0;
 				for (String bc : bannersCan.split(",")) {
 					Statement stmt3 = conn.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bc + "' and CRN = '" + CRN + "' and code = '" + code + "';");
 					rs.next();
 					weight += convertClassification(rs.getString("classification"));
 					stus[convertClassification(rs.getString("classification")) - 1]++;
-					totalStus++;
+					totalStusCan++;
 				}
 				
+				int totalStusCannot = 0;
 				for (String bct : bannersCannot.split(",")) {
 					Statement stmt3 = conn.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bct + "' and CRN = '" + CRN + "' and code = '" + code + "';");
 					rs.next();
 					weight -= convertClassification(rs.getString("classification"));
+					totalStusCannot++;
 				}
 				
-				pq.add(new AlternateSession(room, start, end, days, weight, bannersCan, bannersCannot, stus, totalStus));
+				pq.add(new AlternateSession(room, start, end, days, weight, bannersCan, bannersCannot, stus, totalStusCan, totalStusCannot));
 				if (pq.peek().getNumCan() > mostStudentsAlternate.getNumCan()) {
 					mostStudentsAlternate = pq.peek();
 				}
@@ -782,89 +779,14 @@ public class StudentCourseManager {
 		//weight will be the priority
 		String room[] = getAllCandidateRooms(CRN, code).split(",");
 		
-		//test for MWF times
 		for (String r : room) {
 			if (!r.equals("")) {
+				//test for times on MWF
 				pushToPQ(CRN, code, semester, "MWF", building, r, instructor);
+				//test for times on TR
 				pushToPQ(CRN, code, semester, "TR", building, r, instructor);
 			}
-			/*String times[] = getAllOpenTimes(building, r, semester, "MWF", 50).split(",");
-			for (String t : times) {
-				String start = t.substring(0, t.indexOf("-"));
-				String end = t.substring(t.indexOf("-") + 1);
-				if (instructorIsFree(instructor, semester, "MWF", start, end)) {
-					String bannersCan = studentsCanAttend(CRN, code, semester, "MWF", start, end);
-					String bannersCannot = studentsCannotAttend(CRN, code, semester, "MWF", start, end);
-					int weight = 0;
-					int stus[] = {0,0,0,0,0};
-					int totalStus = 0;
-					for (String bc : bannersCan.split(",")) {
-						Statement stmt3 = conn.createStatement();
-						rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bc + "' and CRN = '" + CRN + "' and code = '" + code + "';");
-						rs.next();
-						weight += convertClassification(rs.getString("classification"));
-						stus[convertClassification(rs.getString("classification")) - 1]++;
-						totalStus++;
-					}
-					
-					for (String bct : bannersCannot.split(",")) {
-						Statement stmt3 = conn.createStatement();
-						rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bct + "' and CRN = '" + CRN + "' and code = '" + code + "';");
-						rs.next();
-						weight -= convertClassification(rs.getString("classification"));
-					}
-					
-					pq.add(new AlternateSession(r, start, end, "MWF", weight, bannersCan, bannersCannot, stus, totalStus));
-				}
-			}*/
 		}
-		
-		//test for TR times
-		//for (String r : room) {
-			
-			/*String times[] = getAllOpenTimes(building, r, semester, "TR", 50).split(",");
-			for (String t : times) {
-				String start = t.substring(0, t.indexOf("-"));
-				String end = t.substring(t.indexOf("-") + 1);
-				if (instructorIsFree(instructor, semester, "MWF", start, end)) {
-					String bannersCan = studentsCanAttend(CRN, code, semester, "MWF", start, end);
-					String bannersCannot = studentsCannotAttend(CRN, code, semester, "MWF", start, end);
-					int weight = 0;
-					int stus[] = {0,0,0,0,0};
-					int totalStus = 0;
-					for (String bc : bannersCan.split(",")) {
-						Statement stmt3 = conn.createStatement();
-						rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bc + "' and CRN = '" + CRN + "' and code = '" + code + "';");
-						rs.next();
-						weight += convertClassification(rs.getString("classification"));
-						stus[convertClassification(rs.getString("classification")) - 1]++;
-						totalStus++;
-					}
-					
-					for (String bct : bannersCannot.split(",")) {
-						Statement stmt3 = conn.createStatement();
-						rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bct + "' and CRN = '" + CRN + "' and code = '" + code + "';");
-						rs.next();
-						weight -= convertClassification(rs.getString("classification"));
-					}
-					
-					pq.add(new AlternateSession(r, start, end, "MWF", weight, bannersCan, bannersCannot, stus, totalStus));
-				}
-			}*/
-		//}
-		
-		/*AlternateSession temp = pq.peek();
-		System.out.println("Room: " + temp.getRoom());
-		System.out.println("Start: " + temp.getStart());
-		System.out.println("End: " + temp.getEnd());
-		System.out.println("Days: " + temp.getDays());
-		System.out.println("Can: " + temp.getCan());
-		System.out.println("Cannot: " + temp.getCannot());
-		System.out.println("Weight: " + temp.getWeight());
-		System.out.println(temp.classCount());
-		System.out.println("num students can: " + temp.getNumCan());*/
-		
-//		/return pq.poll().getRoom();
 	}
 	
 	public String getBestRoom() {
@@ -883,33 +805,44 @@ public class StudentCourseManager {
 	public void getTopFour() {
 		//will call all getBest____ and then poll
 		int stop = pq.size();
+		
+		if (stop >= 4)
+			System.out.println("\nBest 4 options based on number of grad students, then seniors, then juniors, etc.");
+		else
+			System.out.println("\nBest " + stop + " option(s) based on number of grad students, then seniors, then juniors, etc.");
+		System.out.println("---------------------------------------------------------------------------------");
 		for (int i = 0; i < 4 && i < stop; i++) {
-			System.out.println("\n" + i);
+			System.out.println(i + 1 + ":");
 			AlternateSession temp = pq.peek();
 			System.out.println("Room: " + temp.getRoom());
 			System.out.println("Start: " + temp.getStart());
 			System.out.println("End: " + temp.getEnd());
 			System.out.println("Days: " + temp.getDays());
-			System.out.println("Can: " + temp.getCan());
-			System.out.println("Cannot: " + temp.getCannot());
-			System.out.println("Weight: " + temp.getWeight());
+			System.out.println("Banners that can attend: " + temp.getCan());
+			System.out.println("Banners that cannot attend: " + temp.getCannot());
+			//System.out.println("Weight: " + temp.getWeight());
 			System.out.println(temp.classCount());
-			System.out.println("num students can: " + temp.getNumCan());
+			System.out.println("Number of students that can attend: " + temp.getNumCan());
+			System.out.println("Number of students that cannot attend: " + temp.getNumCannot());
+			//System.out.println("Number of students that cannot attend: " + temp.getNumCan());
+			System.out.println("");
 			pq.poll();
 		}
 	}
 	
 	public void getMostStudentsAlternate() {
-		System.out.println("Option with most students: ");
+		System.out.println("\nOption with most students: ");
+		System.out.println("--------------------------");
 		System.out.println("Room: " + mostStudentsAlternate.getRoom());
 		System.out.println("Start: " + mostStudentsAlternate.getStart());
 		System.out.println("End: " + mostStudentsAlternate.getEnd());
 		System.out.println("Days: " + mostStudentsAlternate.getDays());
-		System.out.println("Can: " + mostStudentsAlternate.getCan());
-		System.out.println("Cannot: " + mostStudentsAlternate.getCannot());
-		System.out.println("Weight: " + mostStudentsAlternate.getWeight());
+		System.out.println("Banners that can attend: " + mostStudentsAlternate.getCan());
+		System.out.println("Banners that cannot attend: " + mostStudentsAlternate.getCannot());
+		//System.out.println("Weight: " + mostStudentsAlternate.getWeight());
 		System.out.println(mostStudentsAlternate.classCount());
-		System.out.println("num students can: " + mostStudentsAlternate.getNumCan());
+		System.out.println("Number of students that can attend: " + mostStudentsAlternate.getNumCan());
+		System.out.println("Number of students that cannot attend: " + mostStudentsAlternate.getNumCannot());
 	}
 	
 	public String getMostStudentsRoom() {
@@ -988,13 +921,7 @@ public class StudentCourseManager {
 			if (!temp.equals(str))
 				str = str.substring(temp.length() + 1, str.length());
 
-			// adds temp into newStrings and increments i
-			/*
-			 * System.out.println("old temp: " + temp); if (temp.charAt(0) ==
-			 * '\"' && temp.charAt(temp.length() - 1) == '\"' && temp.contains("
-			 * ,")) temp = temp.replaceAll("\"", "");
-			 * System.out.println("new temp: " + temp);
-			 */
+			// adds temp into newStrings and increments 
 			newStrings[i++] = temp;
 		}
 		return newStrings;
@@ -1011,7 +938,7 @@ public class StudentCourseManager {
 			return 4;
 		else if (c.equals("GR"))
 			return 5;
-		System.out.println("'" + c + "' is an unexpected classification.");
+		System.err.println("Warning: '" + c + "' is an unexpected classification.");
 		return 1;
 	}
 }
@@ -1029,8 +956,9 @@ class AlternateSession {
 	String bannersCannot;
 	int numPerClassification[];
 	int totalStudentsCan;
+	int totalStudentsCannot;
 	
-	public AlternateSession(String room, String start, String end, String days, int weight, String bannersCan, String bannersCannot, int stuCounts[], int totalStudentsCan) {
+	public AlternateSession(String room, String start, String end, String days, int weight, String bannersCan, String bannersCannot, int stuCounts[], int totalStudentsCan, int totalStudentsCannot) {
 		this.room = room;
 		this.start = start;
 		this.end = end;
@@ -1040,6 +968,7 @@ class AlternateSession {
 		this.bannersCannot = bannersCannot;
 		numPerClassification = stuCounts;
 		this.totalStudentsCan = totalStudentsCan; 
+		this.totalStudentsCannot = totalStudentsCannot;
 	}
 	
 	public String getRoom() {
@@ -1071,7 +1000,7 @@ class AlternateSession {
 	}
 	
 	public String classCount() {
-		return "g:" + numPerClassification[4] +"\nS:"+ numPerClassification[3] + "\nj:"+ numPerClassification[2] + "\ns:"+ numPerClassification[1] + "\nf:"+ numPerClassification[0];
+		return "Number of Graduate students that can attend: " + numPerClassification[4] +"\nNumber of seniors that can attend: "+ numPerClassification[3] + "\nNumber of juniors that can attend: "+ numPerClassification[2] + "\nNumber of sophomores that can attend: "+ numPerClassification[1] + "\nNumber of freshmen that can attend: "+ numPerClassification[0];
 	}
 	
 	public int getNumGrad() {
@@ -1096,6 +1025,10 @@ class AlternateSession {
 	
 	public int getNumCan() {
 		return totalStudentsCan;
+	}
+	
+	public int getNumCannot() {
+		return totalStudentsCannot;
 	}
 }
 

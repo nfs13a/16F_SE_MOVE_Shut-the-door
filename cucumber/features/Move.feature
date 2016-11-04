@@ -102,12 +102,12 @@ Feature: Move a course instance from day+time to another
 	Scenario: MBB 314 is free certain times
 		Given database courses
 		Then building "MBB" room "314" is free during semester "201510" on days "MWF" from "0800" to "0850"
-		Then building "MBB" room "314" is free "0800-0850,1200-1250,1300-1350,1500-1550,1600-1650," during semester "201510" on days "MWF" for 50 minutes
+		Then building "MBB" room "314" is free "0800-0850,1200-1250,1300-1350,1500-1550,1600-1650," during semester "201510" on days "MWF"
 
 	Scenario: students (list) can attend course at time in room
 		Given database courses
 		And building "MBB" room "314" is free during semester "201510" on days "MWF" from "0800" to "0850"
-		And building "MBB" room "314" is free "0800-0850,1200-1250,1300-1350,1500-1550,1600-1650," during semester "201510" on days "MWF" for 50 minutes
+		And building "MBB" room "314" is free "0800-0850,1200-1250,1300-1350,1500-1550,1600-1650," during semester "201510" on days "MWF"
 		Then instructor "John Homer" is free semester "201510" on days "MWF" from "0800" to "0850"
 		And students "000035206,000053912,000092980,000203213,000228985,000234506,000268963,000273509,000298206,000334136,000500936,000555650,000557186,000639144,000693048,000745155,000866953,000871940,000975831," can attend CRN "11041" for course "CS120" in semester "201510" on days "MWF" from "0800" to "0850"
 		And students "000153341,000158129,000439071,000564317,000651983,000962704," cannot attend CRN "11041" for course "CS120" in semester "201510" on days "MWF" from "0800" to "0850"
@@ -120,4 +120,4 @@ Feature: Move a course instance from day+time to another
 	#has a student with a classification of "SU" which stands for special undergraduate
 	Scenario: the best option for moving 10893 PSYC120
 		Given database courses
-		Then the option with the most students for CRN "10893" for course "PSYC120" is room "200" on days "TR" from "1200" to "1250" with number of students 169
+		Then the option with the most students for CRN "10893" for course "PSYC120" is room "200" on days "MWF" from "1300" to "1350" with number of students 142

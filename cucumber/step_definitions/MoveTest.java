@@ -139,9 +139,14 @@ public class MoveTest {
 	    assertEquals(scm.roomIsFree(building, room, semester, days, start, end), true);
 	}
 	
-	@Then("^building \"([^\"]*)\" room \"([^\"]*)\" is free \"([^\"]*)\" during semester \"([^\"]*)\" on days \"([^\"]*)\" for (\\d+) minutes$")
+	/*@Then("^building \"([^\"]*)\" room \"([^\"]*)\" is free \"([^\"]*)\" during semester \"([^\"]*)\" on days \"([^\"]*)\" for (\\d+) minutes$")
 	public void buildingRoomIsFreeDuringSemesterOnDaysForMinutes(String building, String room, String times, String semester, String days, int time) throws Throwable {
-		assertEquals(scm.getAllOpenTimes(building, room, semester, days, time), times);
+		assertEquals(scm.getAllOpenTimes(building, room, semester, days), times);
+	}*/
+	
+	@Then("^building \"([^\"]*)\" room \"([^\"]*)\" is free \"([^\"]*)\" during semester \"([^\"]*)\" on days \"([^\"]*)\"$")
+	public void buildingRoomIsFreeDuringSemesterOnDays(String building, String room, String times, String semester, String days) throws Throwable {
+		assertEquals(scm.getAllOpenTimes(building, room, semester, days), times);
 	}
 	
 	@Then("^students \"([^\"]*)\" can attend CRN \"([^\"]*)\" for course \"([^\"]*)\" in semester \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\"$")
@@ -168,7 +173,8 @@ public class MoveTest {
 		assertEquals(scm.getBestRoom(), room);
 	    assertEquals(scm.getBestDays(), days);
 	    assertEquals(scm.getBestTime(), start + "-" + end);
-		scm.getTopFour();
+	    //scm.getMostStudentsAlternate();
+		//scm.getTopFour();
 	}
 	
 	/*@Then("^the option with the most students for CRN \"([^\"]*)\" for course \"([^\"]*)\" is room \"([^\"]*)\" on days \"([^\"]*)\" from \"([^\"]*)\" to \"([^\"]*)\" by weight (\\d+)$")
@@ -184,6 +190,7 @@ public class MoveTest {
 		assertEquals(scm.getMostStudentsDays(), days);
 		assertEquals(scm.getMostStudentsTime(), start + "-" + end);
 		assertEquals(scm.getMostStudentsCount(), numStudents);
-		scm.getMostStudentsAlternate();
+		//scm.getMostStudentsAlternate();
+		//scm.getTopFour();
 	}
 }
