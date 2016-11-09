@@ -50,6 +50,8 @@ public class StudentCourseManager {
 	PriorityQueue<AlternateSession> pq;// = new PriorityQueue<AlternateSession>(10, pqs);	holds all alternate sessions for a given course CRN+code
 	AlternateSession mostStudentsAlternate;// = new AlternateSession("", "", "", "", -1, "", "", new int[5], -1, -1);	//holds the alternate session for a given course CRN+code that has the most students that can attend
 
+	private static String password;
+	
 	public StudentCourseManager(String CSV) { // argument must include the ".csv" extension if it is a filename
 		if (CSV.equals("big")) // use the csv given by Dr. Reeves
 			csvPath = lol + "/implementation/cs374_anon.csv";
@@ -65,7 +67,7 @@ public class StudentCourseManager {
 		
 		pqs = new PQsort();
 		pq = new PriorityQueue<AlternateSession>(10, pqs);
-		mostStudentsAlternate = new AlternateSession("", "", "", "", -1, "", "", new int[5], -1, -1);
+		mostStudentsAlternate = new AlternateSession("", "", "", "", "", -1, "", "", new int[5], -1, -1);
 	}
 
 	// used when the "big" csv has already been parsed and inserted
@@ -84,23 +86,72 @@ public class StudentCourseManager {
 		
 		pqs = new PQsort();
 		pq = new PriorityQueue<AlternateSession>(10, pqs);
-		mostStudentsAlternate = new AlternateSession("", "", "", "", -1, "", "", new int[5], -1, -1);
+		mostStudentsAlternate = new AlternateSession("", "", "", "", "", -1, "", "", new int[5], -1, -1);
 	}
+	
+	/*public StudentCourseManager(String CSV, String pass) { // argument must include the ".csv" extension if it is a filename
+		if (CSV.equals("big")) // use the csv given by Dr. Reeves
+			csvPath = lol + "/implementation/cs374_anon.csv";
+		else // use the test csv filename entered
+			csvPath = lol + "/implementation/" + CSV;
+
+		parseCRN(pass);
+
+		// initialize all primary key vectors
+		allBanners = new Vector<String>();
+		allCIs = new Vector<String>();
+		allSCTs = new Vector<String>();
+		allIs = new Vector<String>();
+		allICTs = new Vector<String>();
+		
+		pqs = new PQsort();
+		pq = new PriorityQueue<AlternateSession>(10, pqs);
+		mostStudentsAlternate = new AlternateSession("", "", "", "", -1, "", "", new int[5], -1, -1);
+	}*/
+
+	// used when the "big" csv has already been parsed and inserted
+	// will only execute the update of "use courses"
+	public StudentCourseManager(String pass, boolean needToSetUp) throws SQLException {
+		if (pass.equals("NONE")) {
+			password = "";
+		} else {
+			password = pass;
+		}
+		
+		//established connection
+		if (!needToSetUp) {
+			//do stuff from no-args constructor
+			connectToDatabase();
+			stmt.executeUpdate("USE COURSES;");
+		} else {
+			//do stuff from single String constructor
+			csvPath = lol + "/implementation/cs374_anon.csv";
+		}
+
+		// initialize all primary key vectors
+		allBanners = new Vector<String>();
+		allCIs = new Vector<String>();
+		allSCTs = new Vector<String>();
+		allIs = new Vector<String>();
+		allICTs = new Vector<String>();
+		
+		pqs = new PQsort();
+		pq = new PriorityQueue<AlternateSession>(10, pqs);
+		mostStudentsAlternate = new AlternateSession("", "", "", "", "", -1, "", "", new int[5], -1, -1);
+	}
+
+
 
 	private static void connectToDatabase() throws SQLException {
 		final String DB_URL = "jdbc:mysql://localhost/";
 
 		// Database credentials
 		final String USER = "root";
-		final String PASS = ""; // password is set to "NO", as in no password,
-								// on test systems.
-								// should add input to final tool to prompt user
-								// for password
 
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			//creates Connection object from database path (?) and credentials
-			conn = (Connection) DriverManager.getConnection(DB_URL, USER, PASS);
+			conn = (Connection) DriverManager.getConnection(DB_URL, USER, password);
 		} catch (ClassNotFoundException e) {
 			System.err.println("Unable to get mysql driver: " + e);
 		} catch (SQLException e) {
@@ -109,6 +160,25 @@ public class StudentCourseManager {
 		//initializes Statement class object
 		stmt = conn.createStatement();
 	}
+
+	/*private static void connectToDatabase(String pass) throws SQLException {
+		final String DB_URL = "jdbc:mysql://localhost/";
+
+		// Database credentials
+		final String USER = "root";
+
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			//creates Connection object from database path (?) and credentials
+			conn = (Connection) DriverManager.getConnection(DB_URL, USER, pass);
+		} catch (ClassNotFoundException e) {
+			System.err.println("Unable to get mysql driver: " + e);
+		} catch (SQLException e) {
+			System.err.println("Unable to connect to server: " + e);
+		}
+		//initializes Statement class object
+		stmt = conn.createStatement();
+	}*/
 	
 	public void parseCRN() {
 		try {
@@ -480,6 +550,9 @@ public class StudentCourseManager {
 	//checks if a student is free in a semester on some days (any permutation of 'MTWRF') during a range of time
 	public boolean studentIsFree(String banner, String semester, String days, String start, String end)
 			throws SQLException {
+		
+		//System.out.println("data: \nbanner: " + banner + "\nsemester: " + semester + "\ndays: " + days + "\nstart: " + start + "\nend: " + end);
+		
 		String query = "select ci.startTime, ci.endTime from studentCoursesTaken sct inner join courseInstances ci on sct.CRN = ci.CRN and sct.code = ci.code and sct.banner = '"
 				+ banner + "' and ci.semester = '" + semester + "' and (";
 		
@@ -494,11 +567,22 @@ public class StudentCourseManager {
 		//order by startTime to make comparisons easy to follow
 		query += ") order by ci.startTime;";
 
+		//System.out.println(query);
+		
 		ResultSet rs = stmt.executeQuery(query);
 		//loop through all times that the students has classes during the semester
 		while (rs.next()) {
-			int sT = Integer.parseInt(rs.getString("ci.startTime")); // start time
-			int eT = Integer.parseInt(rs.getString("ci.endTime")); // end time
+			
+			String qStart = rs.getString("ci.startTime");
+			String qEnd = rs.getString("ci.endTime");
+			
+			if (qStart.equals("") || qEnd.equals("")) {
+				//System.out.println("Bad times: '" + qStart + "'-'" + qEnd + "'");
+				continue;
+			}
+			
+			int sT = Integer.parseInt(qStart); // start time
+			int eT = Integer.parseInt(qEnd); // end time
 			int asT = Integer.parseInt(start); // argument start time	--	the start time of the block during which we want to know if the student is free
 			int aeT = Integer.parseInt(end); // argument end time --	the end time of the block during which we want to know if the student is free
 			
@@ -561,6 +645,20 @@ public class StudentCourseManager {
 		rs.close();
 		System.out.println("no valid data for building " + building + " and room " + room);
 		return -1;
+	}
+
+	//EDIT :D
+	public String getAllCRNs(String code) throws SQLException {
+		Statement thingstmt = conn.createStatement();
+		ResultSet rs = thingstmt
+				.executeQuery("SELECT CRN FROM courseInstances WHERE code = '"+ code + "';");
+		String all = "";
+		while (rs.next()) {
+			all += rs.getString("CRN") + ", ";
+		}
+		if (all.equals(""))
+			return "No found CRN's for code '" + code + "'";
+		return all.substring(0, all.length() - 2);
 	}
 	
 	//gets all rooms that can fit a course CRN+code
@@ -756,11 +854,14 @@ public class StudentCourseManager {
 					Statement stmt3 = conn.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bct + "' and CRN = '" + CRN + "' and code = '" + code + "';");
 					rs.next();
-					weight -= convertClassification(rs.getString("classification"));
+					if (!bct.equals("")) {
+						weight -= convertClassification(rs.getString("classification"));
+					}
+
 					totalStusCannot++;
 				}
 				
-				pq.add(new AlternateSession(room, start, end, days, weight, bannersCan, bannersCannot, stus, totalStusCan, totalStusCannot));
+				pq.add(new AlternateSession(building, room, start, end, days, weight, bannersCan, bannersCannot, stus, totalStusCan, totalStusCannot));
 				if (pq.peek().getNumCan() > mostStudentsAlternate.getNumCan()) {
 					mostStudentsAlternate = pq.peek();
 				}
@@ -768,25 +869,45 @@ public class StudentCourseManager {
 		}
 	}
 	
-	public void setAlternates(String CRN, String code) throws SQLException {
+	public boolean setAlternates(String CRN, String code) throws SQLException {
 		Statement stmt2 = conn.createStatement();
 		ResultSet rs = stmt2.executeQuery("SELECT * FROM courseInstances ci inner join instructorCoursesTaught ict on ci.CRN = '" + CRN + "' and ci.code = '" + code + "' and ci.CRN = ict.CRN and ci.code = ict.code;");
-		rs.next();
-		String semester = rs.getString("ci.semester");
-		String building = rs.getString("ci.building");
-		String instructor = rs.getString("ict.name");
-		
-		//weight will be the priority
-		String room[] = getAllCandidateRooms(CRN, code).split(",");
-		
-		for (String r : room) {
-			if (!r.equals("")) {
-				//test for times on MWF
-				pushToPQ(CRN, code, semester, "MWF", building, r, instructor);
-				//test for times on TR
-				pushToPQ(CRN, code, semester, "TR", building, r, instructor);
+		if (rs.next()) {
+			String semester = rs.getString("ci.semester");
+			String building = rs.getString("ci.building");
+			String instructor = rs.getString("ict.name");
+			
+			if (semester.equals("")) {
+				System.out.println("There is no semester for CRN " + CRN + " and code " + code);
+				return false;
 			}
+			
+			if (building.equals("")) {
+				System.out.println("There is no building for CRN " + CRN + " and code " + code);
+				return false;
+			}
+			
+			if (instructor.equals("")) {
+				System.out.println("There is no instructor for CRN " + CRN + " and code " + code);
+				return false;
+			}
+			
+			//weight will be the priority
+			String room[] = getAllCandidateRooms(CRN, code).split(",");
+			
+			for (String r : room) {
+				if (!r.equals("")) {
+					//test for times on MWF
+					pushToPQ(CRN, code, semester, "MWF", building, r, instructor);
+					//test for times on TR
+					pushToPQ(CRN, code, semester, "TR", building, r, instructor);
+				}
+			}
+			return true;
 		}
+		System.out.println("No found courses for CRN " + CRN + " and code " + code);
+		return false;
+		
 	}
 	
 	public String getBestRoom() {
@@ -814,6 +935,7 @@ public class StudentCourseManager {
 		for (int i = 0; i < 4 && i < stop; i++) {
 			System.out.println(i + 1 + ":");
 			AlternateSession temp = pq.peek();
+			System.out.println("Building: " + temp.getBuilding());
 			System.out.println("Room: " + temp.getRoom());
 			System.out.println("Start: " + temp.getStart());
 			System.out.println("End: " + temp.getEnd());
@@ -833,6 +955,7 @@ public class StudentCourseManager {
 	public void getMostStudentsAlternate() {
 		System.out.println("\nOption with most students: ");
 		System.out.println("--------------------------");
+		System.out.println("Building: " + mostStudentsAlternate.getBuilding());
 		System.out.println("Room: " + mostStudentsAlternate.getRoom());
 		System.out.println("Start: " + mostStudentsAlternate.getStart());
 		System.out.println("End: " + mostStudentsAlternate.getEnd());
@@ -957,8 +1080,10 @@ class AlternateSession {
 	int numPerClassification[];
 	int totalStudentsCan;
 	int totalStudentsCannot;
+	String building;
 	
-	public AlternateSession(String room, String start, String end, String days, int weight, String bannersCan, String bannersCannot, int stuCounts[], int totalStudentsCan, int totalStudentsCannot) {
+	public AlternateSession(String building, String room, String start, String end, String days, int weight, String bannersCan, String bannersCannot, int stuCounts[], int totalStudentsCan, int totalStudentsCannot) {
+		this.building = building;
 		this.room = room;
 		this.start = start;
 		this.end = end;
@@ -969,6 +1094,10 @@ class AlternateSession {
 		numPerClassification = stuCounts;
 		this.totalStudentsCan = totalStudentsCan; 
 		this.totalStudentsCannot = totalStudentsCannot;
+	}
+	
+	public String getBuilding() {
+		return building;
 	}
 	
 	public String getRoom() {

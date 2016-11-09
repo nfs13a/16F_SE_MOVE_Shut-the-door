@@ -121,3 +121,7 @@ Feature: Move a course instance from day+time to another
 	Scenario: the best option for moving 10893 PSYC120
 		Given database courses
 		Then the option with the most students for CRN "10893" for course "PSYC120" is room "200" on days "MWF" from "1300" to "1350" with number of students 142
+
+	Scenario: the best option for moving 21221 PSYC120
+		Given database courses
+		Then the option with the most students for CRN "21221" for course "PSYC120" is room "100" on days "MWF" from "0800" to "0850" with number of students 84
