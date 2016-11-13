@@ -1,0 +1,15 @@
+We will make sure our tool works with the second official CSV.
+
+We will integrate the CSV's of the seats in MBB IF all have been completed.
+
+We will ensure that our tool will run on Dr. Reeves' laptop, and on any unix machine with the proper software installed.
+
+We will format the output on the command line tool (outside of cucumber), specifically for the banners and their classifications
+
+We will catch up with commenting our code.
+
+We will document in the code the complexity of our methods.
+
+Stretch goals but not commitments:
+	Integrate javadocs with current documentation
+	Write the paragraph about which complexity is better for us
