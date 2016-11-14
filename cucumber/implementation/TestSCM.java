@@ -11,32 +11,26 @@ public class TestSCM {
 
 		String crn;		//crn of course
 		String code;	//code of course
-		String response;	//if run or not (y/n)
 		String pass;		//mysql password
+		String fileChoice;	//which file to use
 		Scanner input = new Scanner(System.in);
-
-		System.out.print("Is this your first time running this tool (y/n): ");
-		response = input.next();
-		while (!response.equalsIgnoreCase("y") && !response.equalsIgnoreCase("n")) {
-			System.out.println("Invalid input");
-			System.out.print("Is this your first time running this tool (y/n): ");
-			response = input.next();
-		}
 		
 		System.out.print("What is your MySQL password (enter \"NONE\" if there is not one): ");
 		pass = input.next();
 		
+		System.out.println("Which data would you like to use?\n1 for cs374_anon\n2 for cs374_f16_anon");
+		fileChoice = input.next();
+		while (!fileChoice.equals("1") && !fileChoice.equals("2")) {
+			System.out.println("Invalid input");
+			System.out.println("Which data would you like to use?\n1 for cs374_anon\n2 for cs374_f16_anon");
+			fileChoice = input.next();
+		}
+		
+		
 		String cont = "y";
 
 		while (!cont.equalsIgnoreCase("n")) {
-			StudentCourseManager scm;
-			if (response.equalsIgnoreCase("y")) {
-				scm = new StudentCourseManager(pass, true);
-				scm.parseCRN();
-				response = "n";
-			} else {
-				scm = new StudentCourseManager(pass, false);
-			}
+			StudentCourseManager scm = new StudentCourseManager(pass, fileChoice);	//this constructor parses if needed
 			
 			System.out.print("Enter a code (e.g. CS120): ");
 			code = input.next();
@@ -55,6 +49,11 @@ public class TestSCM {
 			
 			System.out.println("Do you want to check another (y/n): ");
 			cont = input.next();
+			while (!cont.equalsIgnoreCase("y") && !cont.equalsIgnoreCase("n")) {
+				System.out.println("Invalid input");
+				System.out.println("Do you want to check another course (y/n): ");
+				cont = input.next();
+			}
 		}
 	}
 }

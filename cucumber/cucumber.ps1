@@ -1,9 +1,19 @@
-﻿$shell = new-object -com shell.application
+﻿$shellA = new-object -com shell.application
 
-$path = “\implementation\cs374_anon.zip”
+$pathA = “\implementation\cs374_anon.zip”
 
-$zip = $shell.NameSpace(($PSScriptRoot + $path))
-foreach($item in $zip.items())
+$zipA = $shellA.NameSpace(($PSScriptRoot + $pathA))
+foreach($itemA in $zipA.items())
 {
-$shell.Namespace(($PSScriptRoot + "\implementation")).copyhere($item)
+$shellA.Namespace(($PSScriptRoot + "\implementation")).copyhere($itemA)
+}
+
+$shellB = new-object -com shell.application
+
+$pathB = “\implementation\cs374_f16_anon.zip”
+
+$zipB = $shellB.NameSpace(($PSScriptRoot + $pathB))
+foreach($itemB in $zipB.items())
+{
+$shellB.Namespace(($PSScriptRoot + "\implementation")).copyhere($itemB)
 }
