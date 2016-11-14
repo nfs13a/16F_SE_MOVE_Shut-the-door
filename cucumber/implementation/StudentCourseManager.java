@@ -151,6 +151,8 @@ public class StudentCourseManager {
 
 	//establish database connection
 	private static void connectToDatabase() throws SQLException {
+		//Reeves' port for MySQL is 3307 instead of 3306 (default)
+		//"localhost/" becomes "localhost:####/"
 		final String DB_URL = "jdbc:mysql://localhost/";
 
 		// Database credentials

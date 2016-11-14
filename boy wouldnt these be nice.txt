@@ -4,4 +4,10 @@
 
 -complexity team paragraph
 
+-hide password as they enter
+
+-for students that cannot attend, add what course conflicts with the alternate
+
+-when offering all CRN's for code in full tool, output semester, days, start-end times, and any other clarifying info
+
 -the world, essentially
