@@ -1,0 +1,7 @@
+-unzip and delete with java (without powershell) in windows version
+
+-javadocs
+
+-complexity team paragraph
+
+-the world, essentially

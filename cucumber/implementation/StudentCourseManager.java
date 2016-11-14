@@ -982,22 +982,26 @@ public class StudentCourseManager {
 			System.out.println("Banners that can attend:");
 			int j = 0;
 			for (String can : temp.getCan().split(",")) {
-				//System.out.println("banner: " + can + "     semester: " + temp.getSemester());
-				System.out.print("   |" + can + " : " + getClassification(can, temp.getSemester()) + "|    ");
-				j++;
-				if (j % 10 == 0)
-					System.out.println("");
+				if (!can.equals("")) {
+					//System.out.println("banner: " + can + "     semester: " + temp.getSemester());
+					System.out.print("   |" + can + " : " + getClassification(can, temp.getSemester()) + "|    ");
+					j++;
+					if (j % 10 == 0)
+						System.out.println("");
+				}
 			}
 				
 			System.out.println("\nBanners that cannot attend:");
 			
 			j = 0;
 			for (String cannot : temp.getCannot().split(",")) {
-				//System.out.println("banner: " + can + "     semester: " + temp.getSemester());
-				System.out.print("   |" + cannot + " : " + getClassification(cannot, temp.getSemester()) + "|    ");
-				j++;
-				if (j % 10 == 0)
-					System.out.println("");
+				if (!cannot.equals("")) {
+					//System.out.println("banner: " + can + "     semester: " + temp.getSemester());
+					System.out.print("   |" + cannot + " : " + getClassification(cannot, temp.getSemester()) + "|    ");
+					j++;
+					if (j % 10 == 0)
+						System.out.println("");
+				}
 			}
 			
 			
@@ -1039,22 +1043,26 @@ public class StudentCourseManager {
 		System.out.println("Banners that can attend:");
 		int j = 0;
 		for (String can : mostStudentsAlternate.getCan().split(",")) {
-			//System.out.println("banner: " + can + "     semester: " + temp.getSemester());
-			System.out.print("   |" + can + " : " + getClassification(can, mostStudentsAlternate.getSemester()) + "|    ");
-			j++;
-			if (j % 10 == 0)
-				System.out.println("");
+			if (!can.equals("")) {
+				//System.out.println("banner: " + can + "     semester: " + temp.getSemester());
+				System.out.print("   |" + can + " : " + getClassification(can, mostStudentsAlternate.getSemester()) + "|    ");
+				j++;
+				if (j % 10 == 0)
+					System.out.println("");
+			}
 		}
 			
 		System.out.println("\nBanners that cannot attend:");
 		
 		j = 0;
 		for (String cannot : mostStudentsAlternate.getCannot().split(",")) {
-			//System.out.println("banner: " + can + "     semester: " + temp.getSemester());
-			System.out.print("   |" + cannot + " : " + getClassification(cannot, mostStudentsAlternate.getSemester()) + "|    ");
-			j++;
-			if (j % 10 == 0)
-				System.out.println("");
+			if (!cannot.equals("")) {
+				//System.out.println("banner: " + can + "     semester: " + temp.getSemester());
+				System.out.print("   |" + cannot + " : " + getClassification(cannot, mostStudentsAlternate.getSemester()) + "|    ");
+				j++;
+				if (j % 10 == 0)
+					System.out.println("");
+			}
 		}
 		
 		System.out.println("\n" + mostStudentsAlternate.classCount());
