@@ -2,3 +2,5 @@ javac -cp "jars/*:." step_definitions/MoveTest.java implementation/ScriptRunner.
 unzip ./implementation/cs374_anon.zip -d ./implementation
 unzip ./implementation/cs374_f16_anon.zip -d ./implementation
 java -cp "jars/*:." cucumber.api.cli.Main -p progress --snippets camelcase -g step_definitions features
+rm ./implementation/cs374_anon.csv
+rm ./implementation/cs374_f16_anon.csv

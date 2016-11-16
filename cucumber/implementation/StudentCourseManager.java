@@ -1144,7 +1144,7 @@ public class StudentCourseManager {
 					ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bc + "' and CRN = '" + CRN + "' and code = '" + code + "';");
 					rs.next();
 					stus[convertClassification(rs.getString("classification")) - 1]++;
-					totalStusCan++;
+					if (!bc.equals("")) totalStusCan++;
 				}
 				
 				int totalStusCannot = 0;	//number of students that cannot attend
@@ -1153,7 +1153,7 @@ public class StudentCourseManager {
 					Statement stmt3 = conn.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bct + "' and CRN = '" + CRN + "' and code = '" + code + "';");
 					rs.next();
-					totalStusCannot++;
+					if (!bct.equals("")) totalStusCannot++;
 				}
 				
 				//create and store an AlternateSession with collected data
