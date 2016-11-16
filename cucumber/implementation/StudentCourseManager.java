@@ -2,6 +2,7 @@ package implementation;
 
 /**
  * Lukkedoerendunandurraskewdylooshoofermoyportertooryzooysphalnabortansporthaokansakroidverjkapakkapuk
+ * All Complexity calculations are cyclomatic calculations based on converting the method into a graph with E edges and N nodes.
  */
 
 import java.io.BufferedReader;
@@ -52,6 +53,14 @@ public class StudentCourseManager {
 
 	private static String password;
 	
+	/*PCW14a :)
+	-----COMPLEXITY :D-----
+	E= 6
+	N= 6
+	P= 1
+	Complexity = 2 
+	*/
+	
 	public StudentCourseManager(String CSV) { // argument must include the ".csv" extension if it is a filename
 		if (CSV.equals("big")) // use the csv given by Dr. Reeves
 			csvPath = lol + "/implementation/cs374_anon.csv";
@@ -71,6 +80,14 @@ public class StudentCourseManager {
 		
 		password = "";
 	}
+	
+	/*PCW14a :)
+	-----COMPLEXITY :D-----
+	E = 1
+	N = 2
+	P = 1
+	Complexity = 1
+	*/
 
 	// used when the "big" csv has already been parsed and inserted
 	// will only execute the update of "use courses"
@@ -92,6 +109,14 @@ public class StudentCourseManager {
 		
 		password = "";
 	}
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E = 16 
+		N = 13
+		P = 1
+		Complexity = 5 
+	*/
 
 	// used with full tool
 	// acts as no-args or 1 String arg depending on state of needToSetUp
@@ -149,6 +174,14 @@ public class StudentCourseManager {
 		mostStudentsAlternate = new AlternateSession("", "", "", "", "", "", "", "", "", "", new int[5], -1, -1);
 	}
 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1 
+	*/
+	
 	//establish database connection
 	private static void connectToDatabase() throws SQLException {
 		//Reeves' port for MySQL is 3307 instead of 3306 (default)
@@ -171,6 +204,14 @@ public class StudentCourseManager {
 		//initializes Statement class object
 		stmt = conn.createStatement();
 	}
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 14
+		N= 9
+		P= 1
+		Complexity = 7  
+	*/
 	
 	public void parseCRN() {
 		try {
@@ -322,7 +363,15 @@ public class StudentCourseManager {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 0
+		N= 1
+		P= 1
+		Complexity = 1 
+	*/
+	
 	private static void createDatabases(String file) throws FileNotFoundException, IOException, SQLException {
 		//established connection
 		connectToDatabase();
@@ -331,7 +380,14 @@ public class StudentCourseManager {
 		ScriptRunner runner = new ScriptRunner(conn, false, false);
 		runner.runScript(new BufferedReader(new FileReader(file)));
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	private static void insertStudent(String csvIn) throws SQLException {
 		String sqlStudent = "LOAD DATA LOCAL INFILE '" + lol.replace("\\", "/") + "/" + csvIn + "' INTO TABLE student "
 				+ "FIELDS TERMINATED BY ','" + "LINES TERMINATED BY '\n';";
@@ -341,6 +397,13 @@ public class StudentCourseManager {
 		stmt.executeUpdate(sqlStudent);
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1 
+	*/
 	private static void insertCourseInstance(String csvIn) throws SQLException {
 		String sqlCourseInstance = "LOAD DATA LOCAL INFILE '" + lol.replace("\\", "/") + "/" + csvIn
 				+ "' INTO TABLE courseInstances " + "FIELDS TERMINATED BY ','" + "LINES TERMINATED BY '\n';";
@@ -350,6 +413,13 @@ public class StudentCourseManager {
 		stmt.executeUpdate(sqlCourseInstance);
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	private static void insertStudentCourseTaken(String csvIn) throws SQLException {
 		String sqlSCT = "LOAD DATA LOCAL INFILE '" + lol.replace("\\", "/") + "/" + csvIn
 				+ "' INTO TABLE studentCoursesTaken " + "FIELDS TERMINATED BY ','" + "LINES TERMINATED BY '\n';";
@@ -358,7 +428,14 @@ public class StudentCourseManager {
 
 		stmt.executeUpdate(sqlSCT);
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	private static void insertInstructor(String csvIn) throws SQLException {
 		String sqlStudent = "LOAD DATA LOCAL INFILE '" + lol.replace("\\", "/") + "/" + csvIn
 				+ "' INTO TABLE instructor " + "FIELDS TERMINATED BY ','" + "LINES TERMINATED BY '\n';";
@@ -368,6 +445,13 @@ public class StudentCourseManager {
 		stmt.executeUpdate(sqlStudent);
 	}
 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	private static void insertICT(String csvIn) throws SQLException {
 		String sqlStudent = "LOAD DATA LOCAL INFILE '" + lol.replace("\\", "/") + "/" + csvIn
 				+ "' INTO TABLE InstructorCoursesTaught " + "FIELDS TERMINATED BY ','" + "LINES TERMINATED BY '\n';";
@@ -376,7 +460,14 @@ public class StudentCourseManager {
 
 		stmt.executeUpdate(sqlStudent);
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//if students table contains an entry with a banner
 	public boolean studentExists(String banner) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM student WHERE banner = '" + banner + "';");
@@ -384,6 +475,13 @@ public class StudentCourseManager {
 		return rs.getInt("total") == 1;
 	}
 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//returns the instructor who teaches crn and code
 	public String getInstructor(String crn, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT name FROM instructorCoursesTaught WHERE CRN = '" + crn + "' and code = '" + code + "';");
@@ -391,6 +489,13 @@ public class StudentCourseManager {
 		return rs.getString("name");
 	}
 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//returns all CRN's taught by instructorName in semester
 	public String getCoursesTaughtByInstructorDuringSemester(String instructorName, String semester) throws SQLException {
 		String result = "";
@@ -404,7 +509,14 @@ public class StudentCourseManager {
 		}
 		return result;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//returns the instructor that teaches a course with crn and code during a semester
 	//CRN and code are unique per semester for our data.
 	//this method is necessary to ensure that semesters are correct for CRN+code+instructor tuples
@@ -418,7 +530,14 @@ public class StudentCourseManager {
 		// return rs.getString("instructor").substring(1, rs.getString("instructor").length() - 1);
 		return result;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//ensure a course CRN+code exists
 	public boolean codeExistsForCRN(String crn, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM courseInstances WHERE CRN = '" + crn + "' AND code = '" + code + "';");
@@ -426,13 +545,27 @@ public class StudentCourseManager {
 		return rs.getInt("total") > 0;
 	}
 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//ensure a course code is offered
 	public boolean courseExists(String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM courseInstances WHERE code = '" + code + "';");
 		rs.next();
 		return rs.getInt("total") > 0;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//get the semester of a course CRN+code
 	public String getSemester(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
@@ -441,7 +574,14 @@ public class StudentCourseManager {
 			return rs.getString("semester");
 		return "no semester for CRN " + CRN + " and code " + code;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//get the days a course CRN+code is taught
 	public String getDays(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt
@@ -451,6 +591,13 @@ public class StudentCourseManager {
 		return "no days for CRN " + CRN + " and code " + code;
 	}
 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//get the time course CRN+code starts
 	public String getStartTime(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
@@ -460,6 +607,13 @@ public class StudentCourseManager {
 		return "no startTime for CRN " + CRN + " and code " + code;
 	}
 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//get the time course CRN+code ends
 	public String getEndTime(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
@@ -468,7 +622,14 @@ public class StudentCourseManager {
 			return rs.getString("endTime");
 		return "no endTime for CRN " + CRN + " and code " + code;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//get the building course CRN+code is taught in
 	public String getBuilding(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
@@ -481,7 +642,14 @@ public class StudentCourseManager {
 		rs.close();
 		return "no building for CRN " + CRN + " and code " + code;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//get the room course CRN+code is taught in
 	public String getRoom(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt
@@ -491,6 +659,13 @@ public class StudentCourseManager {
 		return "no room for CRN " + CRN + " and code " + code;
 	}
 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//get the max number of students course CRN+code allows to enroll
 	public int getMaxStudents(String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
@@ -504,7 +679,14 @@ public class StudentCourseManager {
 		System.out.println("no max students data for CRN " + CRN + " and code " + code);
 		return -1;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//ensure student is enrolled in course CRN+code
 	public boolean studentEnrolled(String crn, String code, String banner) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM studentCoursesTaken where banner = '" + banner
@@ -512,7 +694,14 @@ public class StudentCourseManager {
 		rs.next();
 		return rs.getInt("total") > 0;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//gets classification (FR, SO, JR, SR, GR, SU) of student when taking a course CRN+code, which exists exclusively in a unique semester
 	public String getClassification(String banner, String CRN, String code) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken where banner = '" + banner
@@ -523,6 +712,13 @@ public class StudentCourseManager {
 		return "no classification for given data";
 	}
 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//gets classification (FR, SO, JR, SR, GR, SU) of student during a semester
 	public String getClassification(String banner, String semester) throws SQLException {
 		ResultSet rs = stmt.executeQuery(
@@ -535,14 +731,28 @@ public class StudentCourseManager {
 			return rs.getString("classification");
 		return "no classification for given data";
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//ensure an instructor exists
 	public boolean instructorExists(String name) throws SQLException {
 		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM instructor WHERE name = '" + name + "';");
 		rs.next();
 		return rs.getInt("total") == 1;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 14
+		N= 10
+		P= 1
+		Complexity = 6
+	*/
 	//checks if a student is free in a semester on some days (any permutation of 'MTWRF') during a range of time
 	public boolean studentIsFree(String banner, String semester, String days, String start, String end)
 			throws SQLException {
@@ -595,7 +805,14 @@ public class StudentCourseManager {
 		// System.out.println("No courses for banner "+banner+" in semester " + semester);
 		return true;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :(-----
+		E= 10
+		N= 8
+		P= 1
+		Complexity = 4
+	*/
 	//ensures that an instructor is free in a time period on certain days during a semester
 	public boolean instructorIsFree(String name, String semester, String days, String start, String end)
 			throws SQLException {
@@ -624,7 +841,14 @@ public class StudentCourseManager {
 		// System.out.println("No courses for name " + name + " in semester " + semester);
 		return true;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//gets the max number of seats in a room in a building
 	//estimates this data from the largest maxStudents value of a class in that room
 	public int getMaxSeats(String building, String room) throws SQLException {
@@ -643,7 +867,14 @@ public class StudentCourseManager {
 		System.out.println("no valid data for building " + building + " and room " + room);
 		return -1;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 7
+		N= 6
+		P= 1
+		Complexity = 3
+	*/
 	//retrieves all CRN's for a given code
 	//used in command line ui to provide prompts
 	public String getAllCRNs(String code) throws SQLException {
@@ -660,6 +891,13 @@ public class StudentCourseManager {
 		return all.substring(0, all.length() - 2);
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 7
+		N= 6
+		P= 1
+		Complexity = 3
+	*/
 	//gets all rooms that can fit a course CRN+code
 	public String getAllCandidateRooms(String CRN, String code) throws SQLException {
 		//for 11041 CS120 the equivalent query would be:
@@ -685,6 +923,13 @@ public class StudentCourseManager {
 		//select distinct(room) as dRoom from courseInstances where building = (select building from courseInstances where CRN = '11041' and code = 'CS120') order by dRoom;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 10
+		N= 9
+		P= 1
+		Complexity = 3
+	*/
 	//determines if a room is free during a semester on certain days from one time until another
 	public boolean roomIsFree(String building, String room, String semester, String days, String start, String end) throws SQLException {
 		//works just like studentIsFree, but for rooms
@@ -706,6 +951,13 @@ public class StudentCourseManager {
 		return true;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 46
+		N= 33
+		P= 1
+		Complexity = 15
+	*/
 	//gets all the times that a room is free during a semester on certain days
 	public String getAllOpenTimes(String building, String room, String semester, String days) throws SQLException {	//extra argument int timelength if not just doing MWF and TR classes with normal time constraints
 		int timeLength = days.equals("MWF") ? 50 : 80;	//MWF classes are 50 minutes, TR classes are 80 minutes, and all others are not considered currently
@@ -806,7 +1058,14 @@ public class StudentCourseManager {
 		return allTimes;
 		//select CRN, code, startTime, endTime, days from courseInstances where building = 'MBB' and room = '314' and semester = '201510' and (days LIKE '%M%' or days LIKE '%W%' or days LIKE '%F%') order by startTime;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//gets all students that can attend a course CRN+code during time start+end on days during semester
 	public String studentsCanAttend(String CRN, String code, String semester, String days, String start, String end) throws SQLException {
 		String allStudents = "";
@@ -826,6 +1085,13 @@ public class StudentCourseManager {
 		return allStudents;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 5
+		N= 5
+		P= 1
+		Complexity = 2
+	*/
 	//gets all students that canNOT attend a course CRN+code during time start+end on days during semester
 	public String studentsCannotAttend(String CRN, String code, String semester, String days, String start, String end) throws SQLException {
 		//same as above, looking for cannot attend
@@ -844,6 +1110,13 @@ public class StudentCourseManager {
 		return allStudents;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 21
+		N= 16
+		P= 1
+		Complexity = 7
+	*/
 	//adds all AlternateSessions to data member pq for course CRN+code taught by instructor in building+room on days during semester
 	private void pushToPQ(String CRN, String code, String semester, String days, String building, String room, String instructor) throws SQLException {
 		String times[] = getAllOpenTimes(building, room, semester, days).split(",");	//all "start-end" times that building+room is free on days during semester
@@ -897,6 +1170,13 @@ public class StudentCourseManager {
 		}
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 18
+		N= 14
+		P= 1
+		Complexity = 6
+	*/
 	//set all AlternateSessions
 	public boolean setAlternates(String CRN, String code) throws SQLException {
 		//get data for course CRN+code and the course's instructor
@@ -944,21 +1224,49 @@ public class StudentCourseManager {
 		
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//return room of best AlternateSession
 	public String getBestRoom() {
 		return pq.peek().getRoom();
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//return days of best AlternateSession
 	public String getBestDays() {
 		return pq.peek().getDays();
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//return time of best AlternateSession
 	public String getBestTime() {
 		return pq.peek().getStart() + "-" + pq.peek().getEnd();
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 24
+		N= 19
+		P= 1
+		Complexity = 7
+	*/
 	//print best 4 AlternateSession based on number of students per classification
 	public void getTopFour() throws SQLException {
 		//will call all getBest____ and then poll
@@ -1016,22 +1324,57 @@ public class StudentCourseManager {
 		}
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getMostStudentsRoom() {
 		return mostStudentsAlternate.getRoom();
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getMostStudentsDays() {
 		return mostStudentsAlternate.getDays();
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getMostStudentsTime() {
 		return mostStudentsAlternate.getStart() + "-" + mostStudentsAlternate.getEnd();
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public int getMostStudentsCount() {
 		return mostStudentsAlternate.getNumCan();
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 17
+		N= 12
+		P= 1
+		Complexity = 7
+	*/
 	public void getMostStudentsAlternate() throws SQLException{
 		//print all data about mostStudentsAlternate
 		System.out.println("\nOption with most students: ");
@@ -1072,6 +1415,13 @@ public class StudentCourseManager {
 		System.out.println("Number of students that cannot attend: " + mostStudentsAlternate.getNumCannot());
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 24
+		N= 19
+		P= 1
+		Complexity = 7
+	*/
 	private static String[] newSplit(String str) {
 		// guaranteed to have 147 columns; any more are a mistake and/or not
 		// meaningful
@@ -1137,7 +1487,14 @@ public class StudentCourseManager {
 		}
 		return newStrings;
 	}
-
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 12
+		N= 9
+		P= 1
+		Complexity = 5
+	*/
 	//classification is equal to number of years
 	//SU is currently treated as FR equivalent
 	public static int convertClassification(String c) {
@@ -1174,6 +1531,13 @@ class AlternateSession {
 	int totalStudentsCan;
 	int totalStudentsCannot;
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//constructor that sets all data members
 	public AlternateSession(String CRN, String code, String building, String room, String start, String end, String days, String semester, String bannersCan, String bannersCannot, int stuCounts[], int totalStudentsCan, int totalStudentsCannot) {
 		this.CRN = CRN;
@@ -1191,75 +1555,201 @@ class AlternateSession {
 		this.totalStudentsCannot = totalStudentsCannot;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getCRN() {
 		return CRN;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getCode() {
 		return code;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	//getters for all data members
 	public String getBuilding() {
 		return building;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getRoom() {
 		return room;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getStart() { 
 		return start;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getEnd() {
 		return end;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getDays() {
 		return days;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getSemester() {
 		return semester;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getCan() {
 		return bannersCan;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String getCannot() {
 		return bannersCannot;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public String classCount() {
 		return "Number of Graduate students that can attend: " + numPerClassification[4] +"\nNumber of seniors that can attend: "+ numPerClassification[3] + "\nNumber of juniors that can attend: "+ numPerClassification[2] + "\nNumber of sophomores that can attend: "+ numPerClassification[1] + "\nNumber of freshmen that can attend: "+ numPerClassification[0];
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public int getNumGrad() {
 		return numPerClassification[4];
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public int getNumSenior() {
 		return numPerClassification[3];
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public int getNumJunior() {
 		return numPerClassification[2];
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public int getNumSophomore() {
 		return numPerClassification[1];
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public int getNumFreshman() {
 		return numPerClassification[0];
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public int getNumCan() {
 		return totalStudentsCan;
 	}
 	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
 	public int getNumCannot() {
 		return totalStudentsCannot;
 	}
@@ -1268,6 +1758,13 @@ class AlternateSession {
 //defines priority of pq (data member of StudentCourseManager)
 class PQsort implements Comparator<AlternateSession> {
 	 
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 12
+		N= 8
+		P= 1
+		Complexity = 6
+	*/
 	public int compare(AlternateSession one, AlternateSession two) {
 		//grads most important
 		if (two.getNumGrad() - one.getNumGrad() != 0)
