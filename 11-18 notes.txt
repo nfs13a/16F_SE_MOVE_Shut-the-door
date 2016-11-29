@@ -1,0 +1,17 @@
+prompt: "Enter a CRN of a MWF or TR class in MBB"
+
+input: CRN
+	-is either a MWF or TR class
+
+output: "top 5"
+	-Day:	MWF or TR
+	-Time:	From and To
+	-Room:	always MBB
+	-tell about # of each classification more in-depth
+
+-maybe look at # that can attend time slot and then which rooms will fit
+	-currently finding all rooms that fit max students in class and then seeing who can fit in a time slot when that room is free
+
+-look at ABET requirements for final presentation
+
+-1 full document for final
