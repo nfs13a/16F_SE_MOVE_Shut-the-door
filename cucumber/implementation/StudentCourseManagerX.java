@@ -1125,7 +1125,7 @@ public class StudentCourseManagerX {
 		Complexity = 7
 	*/
 	//adds all AlternateSessionXs to data member pq for course CRN+code taught by instructor in building+room on days during semester
-	private void pushToPQ(String CRN, String semester, String days, String building, String room, String instructor) throws SQLException {
+	private void pushToPQ(String CRN, String code, String semester, String days, String building, String room, String instructor) throws SQLException {
 		String times[] = getAllOpenTimes(building, room, semester, days).split(",");	//all "start-end" times that building+room is free on days during semester
 		//loop through all times
 		for (String t : times) {
@@ -1164,7 +1164,7 @@ public class StudentCourseManagerX {
 				}
 				
 				//create and store an AlternateSessionX with collected data
-				AlternateSessionX tempSession = new AlternateSessionX(CRN, "code", building, room, start, end, days, semester, bannersCan, bannersCannot, stus, totalStusCan, totalStusCannot);
+				AlternateSessionX tempSession = new AlternateSessionX(CRN, code, building, room, start, end, days, semester, bannersCan, bannersCannot, stus, totalStusCan, totalStusCannot);
 				
 				//push a new AlternateSessionX with collected data to pq
 				pq.add(tempSession);
@@ -1193,6 +1193,7 @@ public class StudentCourseManagerX {
 			String semester = rs.getString("ci.semester");	//semester of course CRN+code
 			String building = rs.getString("ci.building");	//building of course CRN+code
 			String instructor = rs.getString("ict.name");	//instructor of course CRN+code
+			String code = rs.getString("ci.code");
 			
 			//must have a semester
 			if (semester.equals("")) {
@@ -1212,6 +1213,12 @@ public class StudentCourseManagerX {
 				return false;
 			}
 			
+			//must have an instructor
+			if (code.equals("")) {
+				System.out.println("There is no code for CRN " + CRN);
+				return false;
+			}
+			
 			//get all rooms in building
 			String room[] = getAllCandidateRooms(CRN).split(",");
 			
@@ -1219,9 +1226,9 @@ public class StudentCourseManagerX {
 			for (String r : room) {
 				if (!r.equals("")) {
 					//test for times on MWF
-					pushToPQ(CRN, semester, "MWF", building, r, instructor);
+					pushToPQ(CRN, code, semester, "MWF", building, r, instructor);
 					//test for times on TR
-					pushToPQ(CRN, semester, "TR", building, r, instructor);
+					pushToPQ(CRN, code, semester, "TR", building, r, instructor);
 				}
 			}
 			return true;
@@ -1283,9 +1290,11 @@ public class StudentCourseManagerX {
 		//will call all getBest____ and then poll
 		
 		int stop = pq.size();	//get # of found AlternateSessionX 's
-		
+		System.out.println("\nFor course:");
+		System.out.println("\tCRN: " + mostStudentsAlternate.getCRN());
+		System.out.println("\tcode: " + mostStudentsAlternate.getCode());
 		if (stop >= 4)
-			System.out.println("\nBest 4 options based on number of grad students, then seniors, then juniors, etc.");
+			System.out.println("Best 4 options based on number of grad students, then seniors, then juniors, etc.");
 		else
 			System.out.println("\nBest " + stop + " option(s) based on number of grad students, then seniors, then juniors, etc.");
 		System.out.println("---------------------------------------------------------------------------------");
