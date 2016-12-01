@@ -28,24 +28,29 @@ public class TestSCMX {
 		
 		
 		String cont = "y";
+		
+		System.out.print("Enter a CRN (or \"q\" to quit): ");
+		crn = input.next();
 
-		while (!cont.equalsIgnoreCase("n")) {
+		while (!crn.equalsIgnoreCase("q")) {
 			StudentCourseManagerX scm = new StudentCourseManagerX(pass, fileChoice);	//this constructor parses if needed
 	
-			System.out.print("Enter a CRN: ");
-			crn = input.next();
+			/*System.out.print("Enter a CRN: ");
+			crn = input.next();*/
 			if (scm.setAlternates(crn)) {
 				scm.getTopFour();
 				scm.getMostStudentsAlternate();
 			}
 			
-			System.out.println("Do you want to check another (y/n): ");
+			/*System.out.println("Do you want to check another (y/n): ");
 			cont = input.next();
 			while (!cont.equalsIgnoreCase("y") && !cont.equalsIgnoreCase("n")) {
 				System.out.println("Invalid input");
 				System.out.println("Do you want to check another course (y/n): ");
 				cont = input.next();
-			}
+			}*/
+			System.out.print("Enter a CRN (or \"q\" to quit): ");
+			crn = input.next();
 		}
 	}
 }

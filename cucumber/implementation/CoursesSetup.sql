@@ -49,3 +49,10 @@ PRIMARY KEY (name,CRN,code),
 FOREIGN KEY (name) references instructor(name),
 FOREIGN KEY (CRN, code) references courseInstances(CRN, code)
 );
+
+CREATE TABLE KnownRoom
+( building varchar(50) NOT NULL,
+room varchar(50) NOT NULL,
+seats int NOT NULL,
+PRIMARY KEY (building, room)
+);

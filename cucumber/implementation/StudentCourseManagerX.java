@@ -349,6 +349,8 @@ public class StudentCourseManagerX {
 				insertCourseInstance("ciTable.csv");
 				insertStudentCourseTaken("sctTable.csv");
 				insertICT("ictTable.csv");
+				
+				insertKnownRooms();
 
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -379,6 +381,45 @@ public class StudentCourseManagerX {
 		//create a ScriptRunner and uses it to create a new database
 		ScriptRunner runner = new ScriptRunner(conn, false, false);
 		runner.runScript(new BufferedReader(new FileReader(file)));
+	}
+	
+	private static void insertKnownRooms() throws SQLException {
+		//MBB floors 1-3
+		/*for (int i = 1; i <= 3; i++) {
+			String sqlRoomData = "LOAD DATA LOCAL INFILE '" + lol.replace("\\", "/") + "/MBBfloor1.csv' INTO TABLE student "
+					+ "FIELDS TERMINATED BY ','" + " LINES TERMINATED BY '\n';";
+			System.out.println(sqlRoomData);
+			stmt.executeUpdate(sqlRoomData);
+		}*/
+		
+		for (int i = 1; i <= 3; i++) {
+			try {
+				// sets up parsing data
+				BufferedReader br = null;
+				String line = "";
+				String cvsSplitBy = ",";
+
+				try {
+					br = new BufferedReader(new FileReader(lol + "/MBBfloor" + i + ".csv"));
+					while ((line = br.readLine()) != null) {
+						String[] stuff = line.split(",");
+						stmt = conn.createStatement();
+						stmt.execute("INSERT INTO knownroom VALUES ('" + stuff[0] + "','" + stuff[1] + "'," + stuff[2]
+								+ ");");
+					}
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} catch (SQLException se) {
+				// Handle errors for JDBC
+				se.printStackTrace();
+			} catch (Exception e) {
+				// Handle errors for Class.forName
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	/*PCW14a :)
@@ -859,18 +900,29 @@ public class StudentCourseManagerX {
 	//gets the max number of seats in a room in a building
 	//estimates this data from the largest maxStudents value of a class in that room
 	public int getMaxSeats(String building, String room) throws SQLException {
-		//gets all maxStudents values from courses in that building and room
-		//values are ordered from greatest to least
-		ResultSet rs = stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE " + "building = '" + building
-				+ "' AND room = '" + room + "' order by maxStudents desc;");
-		//returns the first value if it exists
-		//works because of the ordering of the query
-		if (rs.next()) {
-			int temp = rs.getInt("maxStudents");
+		Statement stmtNew = conn.createStatement();
+		ResultSet rsNew = stmtNew.executeQuery("SELECT seats FROM knownroom WHERE building = '" + building + "' AND room = '" + room + "';");
+		
+		if (rsNew.next()) {
+			int seats = rsNew.getInt("seats");
+			//System.out.println("Seats of room " + room + ": " + seats);
+			return seats;
+		} else {
+
+			// gets all maxStudents values from courses in that building and
+			// room values are ordered from greatest to least
+			ResultSet rs = stmt.executeQuery("SELECT maxStudents FROM courseInstances WHERE " + "building = '"
+					+ building + "' AND room = '" + room + "' order by maxStudents desc;");
+			// returns the first value if it exists
+			// works because of the ordering of the query
+			if (rs.next()) {
+				int temp = rs.getInt("maxStudents");
+				rs.close();
+				return temp;
+			}
 			rs.close();
-			return temp;
 		}
-		rs.close();
+		rsNew.close();
 		System.out.println("no valid data for building " + building + " and room " + room);
 		return -1;
 	}
@@ -1147,11 +1199,16 @@ public class StudentCourseManagerX {
 				int totalStusCan = 0;	//number of students that can attend
 				//loop through all students that can attend
 				for (String bc : bannersCan.split(",")) {
+					if (bc.equals("")) {
+						//System.out.println("caught empty");
+						continue;
+					}
 					Statement stmt3 = conn.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bc + "' and CRN = '" + CRN + "';");
 					rs.next();
+					//System.out.println("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bc + "' and CRN = '" + CRN + "';");
 					stus[convertClassification(rs.getString("classification")) - 1]++;
-					if (!bc.equals("")) totalStusCan++;
+					totalStusCan++;
 				}
 				
 				int totalStusCannot = 0;	//number of students that cannot attend
