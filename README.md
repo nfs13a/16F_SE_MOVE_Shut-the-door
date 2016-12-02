@@ -2,11 +2,12 @@
 _____________
 | Requires: |
 -------------
-MySQL version 3.6, or similar
-Java 7 or 8
-Running MySQL on port 3306 (default)
-Knowledge of the root MySQL password
-Powershell enabled (Windows only)
+1. MySQL version 3.6, or similar
+2. Java 7 or 8
+3. Running MySQL on port 3306 (default)
+4. Knowledge of the root MySQL password
+5. Powershell enabled (Windows only)
+
 _____________
 | Running: |
 -------------
