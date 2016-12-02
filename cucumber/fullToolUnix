@@ -1,6 +1,5 @@
 #!/bin/bash
 javac -cp "jars/*:." step_definitions/TestSCMX.java implementation/ScriptRunner.java implementation/StudentCourseManagerX.java
-echo Unzipping csv files
 unzip ./implementation/cs374_anon.zip -d ./implementation
 unzip ./implementation/cs374_f16_anon.zip -d ./implementation
 java -cp "jars/*:." implementation/TestSCMX

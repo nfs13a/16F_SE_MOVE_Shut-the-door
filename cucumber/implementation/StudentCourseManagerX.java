@@ -49,7 +49,7 @@ public class StudentCourseManagerX {
 	
 	PQsort pqs;// = new PQsort();	used to compare priorities of AlternateSessionXs to be pushed into pq
 	PriorityQueue<AlternateSessionX> pq;// = new PriorityQueue<AlternateSessionX>(10, pqs);	holds all alternate sessions for a given course CRN+code;	number of students in each classification (descending, as in GR is most important) is weight
-	AlternateSessionX mostStudentsAlternate;// = new AlternateSessionX("", "", "", "", "", "", "", "", "", "", new int[5], -1, -1);	//holds the alternate session for a given course CRN+code that has the most students that can attend
+	AlternateSessionX mostStudentsAlternate;// = new AlternateSessionX("", "", "", "", "", "", "", "", "", "", new int[5], new int[5], -1, -1);	//holds the alternate session for a given course CRN+code that has the most students that can attend
 
 	private static String password;
 	
@@ -76,7 +76,7 @@ public class StudentCourseManagerX {
 		
 		pqs = new PQsort();
 		pq = new PriorityQueue<AlternateSessionX>(10, pqs);
-		mostStudentsAlternate = new AlternateSessionX("", "no available alternates", "", "", "", "", "", "", "", "", new int[5], -1, -1);
+		mostStudentsAlternate = new AlternateSessionX("", "no available alternates", "", "", "", "", "", "", "", "", new int[5], new int[5], -1, -1);
 		
 		password = "";
 	}
@@ -105,7 +105,7 @@ public class StudentCourseManagerX {
 		
 		pqs = new PQsort();
 		pq = new PriorityQueue<AlternateSessionX>(10, pqs);
-		mostStudentsAlternate = new AlternateSessionX("", "no available alternates", "", "", "", "", "", "", "", "", new int[5], -1, -1);
+		mostStudentsAlternate = new AlternateSessionX("", "no available alternates", "", "", "", "", "", "", "", "", new int[5], new int[5], -1, -1);
 		
 		password = "";
 	}
@@ -171,7 +171,7 @@ public class StudentCourseManagerX {
 		
 		pqs = new PQsort();
 		pq = new PriorityQueue<AlternateSessionX>(10, pqs);
-		mostStudentsAlternate = new AlternateSessionX("", "no available alternates", "", "", "", "", "", "", "", "", new int[5], -1, -1);
+		mostStudentsAlternate = new AlternateSessionX("", "no available alternates", "", "", "", "", "", "", "", "", new int[5], new int[5], -1, -1);
 	}
 
 	/*PCW14a :)
@@ -1211,17 +1211,21 @@ public class StudentCourseManagerX {
 					totalStusCan++;
 				}
 				
+				int stusNo[] = {0,0,0,0,0};	//number of GR, SR, JR, SO, FR that cannot attend
 				int totalStusCannot = 0;	//number of students that cannot attend
 				//loop through all students that cannot attend
 				for (String bct : bannersCannot.split(",")) {
-					Statement stmt3 = conn.createStatement();
-					ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bct + "' and CRN = '" + CRN + "';");
-					rs.next();
-					if (!bct.equals("")) totalStusCannot++;
+					if (!bct.equals("")) {
+						Statement stmt3 = conn.createStatement();
+						ResultSet rs = stmt.executeQuery("SELECT classification FROM studentCoursesTaken WHERE banner = '" + bct + "' and CRN = '" + CRN + "';");
+						rs.next();
+						stusNo[convertClassification(rs.getString("classification")) - 1]++;
+						totalStusCannot++;
+					}
 				}
 				
 				//create and store an AlternateSessionX with collected data
-				AlternateSessionX tempSession = new AlternateSessionX(CRN, code, building, room, start, end, days, semester, bannersCan, bannersCannot, stus, totalStusCan, totalStusCannot);
+				AlternateSessionX tempSession = new AlternateSessionX(CRN, code, building, room, start, end, days, semester, bannersCan, bannersCannot, stus, stusNo, totalStusCan, totalStusCannot);
 				
 				//push a new AlternateSessionX with collected data to pq
 				pq.add(tempSession);
@@ -1348,8 +1352,8 @@ public class StudentCourseManagerX {
 		
 		int stop = pq.size();	//get # of found AlternateSessionX 's
 		System.out.println("\nFor course:");
-		System.out.println("\tCRN: " + mostStudentsAlternate.getCRN());
-		System.out.println("\tcode: " + mostStudentsAlternate.getCode());
+		System.out.println("   CRN: " + mostStudentsAlternate.getCRN());
+		System.out.println("   code: " + mostStudentsAlternate.getCode());
 		if (stop >= 4)
 			System.out.println("Best 4 options based on number of grad students, then seniors, then juniors, etc.");
 		else
@@ -1377,8 +1381,13 @@ public class StudentCourseManagerX {
 						System.out.println("");
 				}
 			}
+			
+			if (j == 0) System.out.println("   |None|");
+			else if (j % 10 > 0) System.out.println("");
+			System.out.println(temp.classCount());
+			System.out.println("   Number of students that cannot attend: " + temp.getNumCannot());
 				
-			System.out.println("\nBanners that cannot attend:");
+			System.out.println("Banners that cannot attend:");
 			
 			j = 0;
 			for (String cannot : temp.getCannot().split(",")) {
@@ -1391,11 +1400,12 @@ public class StudentCourseManagerX {
 				}
 			}
 			
+			if (j == 0) System.out.println("   |None|");
+			else if (j % 10 > 0) System.out.println("");
 			
 			//System.out.println("Weight: " + temp.getWeight());
-			System.out.println("\n" + temp.classCount());
-			System.out.println("Number of students that can attend: " + temp.getNumCan());
-			System.out.println("Number of students that cannot attend: " + temp.getNumCannot());
+			System.out.println(temp.classCountNo());
+			System.out.println("   Number of students that cannot attend: " + temp.getNumCannot());
 			System.out.println("");
 			pq.poll();
 		}
@@ -1479,8 +1489,13 @@ public class StudentCourseManagerX {
 					System.out.println("");
 			}
 		}
-			
-		System.out.println("\nBanners that cannot attend:");
+		
+		if (j == 0) System.out.println("   |None|");
+		else if (j % 10 > 0) System.out.println("");
+		System.out.println(mostStudentsAlternate.classCount());
+		System.out.println("   Number of students that can attend: " + mostStudentsAlternate.getNumCan());
+		
+		System.out.println("Banners that cannot attend:");
 		
 		j = 0;
 		for (String cannot : mostStudentsAlternate.getCannot().split(",")) {
@@ -1493,9 +1508,11 @@ public class StudentCourseManagerX {
 			}
 		}
 		
-		System.out.println("\n" + mostStudentsAlternate.classCount());
-		System.out.println("Number of students that can attend: " + mostStudentsAlternate.getNumCan());
-		System.out.println("Number of students that cannot attend: " + mostStudentsAlternate.getNumCannot());
+		if (j == 0) System.out.println("   |None|");
+		else if (j % 10 > 0) System.out.println("");
+		
+		System.out.println(mostStudentsAlternate.classCountNo());
+		System.out.println("   Number of students that cannot attend: " + mostStudentsAlternate.getNumCannot());
 		}
 	}
 	
@@ -1592,7 +1609,7 @@ public class StudentCourseManagerX {
 			return 4;
 		else if (c.equals("GR"))
 			return 5;
-		System.err.println("Warning: '" + c + "' is an unexpected classification.");
+		//System.err.println("Warning: '" + c + "' is an unexpected classification.");
 		return 1;
 	}
 }
@@ -1612,6 +1629,7 @@ class AlternateSessionX {
 	String bannersCan;
 	String bannersCannot;
 	int numPerClassification[];	//number of students that can attend by classification [FR, SO, JR, SR, GR]
+	int numPerClassificationNo[];	//number of students that cannot attend by classification [FR, SO, JR, SR, GR]
 	int totalStudentsCan;
 	int totalStudentsCannot;
 	
@@ -1623,7 +1641,7 @@ class AlternateSessionX {
 		Complexity = 1
 	*/
 	//constructor that sets all data members
-	public AlternateSessionX(String CRN, String code, String building, String room, String start, String end, String days, String semester, String bannersCan, String bannersCannot, int stuCounts[], int totalStudentsCan, int totalStudentsCannot) {
+	public AlternateSessionX(String CRN, String code, String building, String room, String start, String end, String days, String semester, String bannersCan, String bannersCannot, int stuCounts[], int stusNoCounts[], int totalStudentsCan, int totalStudentsCannot) {
 		this.CRN = CRN;
 		this.code = code;
 		this.building = building;
@@ -1635,6 +1653,7 @@ class AlternateSessionX {
 		this.bannersCan = bannersCan;
 		this.bannersCannot = bannersCannot;
 		numPerClassification = stuCounts;
+		numPerClassificationNo = stusNoCounts;
 		this.totalStudentsCan = totalStudentsCan; 
 		this.totalStudentsCannot = totalStudentsCannot;
 	}
@@ -1758,7 +1777,17 @@ class AlternateSessionX {
 		Complexity = 1
 	*/
 	public String classCount() {
-		return "Number of Graduate students that can attend: " + numPerClassification[4] +"\nNumber of seniors that can attend: "+ numPerClassification[3] + "\nNumber of juniors that can attend: "+ numPerClassification[2] + "\nNumber of sophomores that can attend: "+ numPerClassification[1] + "\nNumber of freshmen that can attend: "+ numPerClassification[0];
+		return "   Graduate students: " + numPerClassification[4] +"\n   Seniors: "+ numPerClassification[3] + "\n   Juniors: "+ numPerClassification[2] + "\n   Sophomores: "+ numPerClassification[1] + "\n   Freshmen: "+ numPerClassification[0];
+	}
+	
+	public String classCountNo() {
+		/*System.out.println("Graduate students: " + numPerClassificationNo[4]);
+		System.out.println("\nSeniors: "+ numPerClassificationNo[3]);
+		System.out.println("\nJuniors: "+ numPerClassificationNo[2]);
+		System.out.println("\nSophomores: "+ numPerClassificationNo[1]);
+		System.out.println("\nFreshmen: "+ numPerClassificationNo[0]);*/
+		
+		return "   Graduate students: " + numPerClassificationNo[4] +"\n   Seniors: "+ numPerClassificationNo[3] + "\n   Juniors: "+ numPerClassificationNo[2] + "\n   Sophomores: "+ numPerClassificationNo[1] + "\n   Freshmen: "+ numPerClassificationNo[0];
 	}
 	
 	/*PCW14a :)
@@ -1815,6 +1844,57 @@ class AlternateSessionX {
 	public int getNumFreshman() {
 		return numPerClassification[0];
 	}
+	
+	
+	//qqq
+	public int getNumGradNo() {
+		return numPerClassificationNo[4];
+	}
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
+	public int getNumSeniorNo() {
+		return numPerClassificationNo[3];
+	}
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
+	public int getNumJuniorNo() {
+		return numPerClassificationNo[2];
+	}
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
+	public int getNumSophomoreNo() {
+		return numPerClassificationNo[1];
+	}
+	
+	/*PCW14a :)
+		-----COMPLEXITY :D-----
+		E= 1
+		N= 2
+		P= 1
+		Complexity = 1
+	*/
+	public int getNumFreshmanNo() {
+		return numPerClassificationNo[0];
+	}
+	
 	
 	/*PCW14a :)
 		-----COMPLEXITY :D-----

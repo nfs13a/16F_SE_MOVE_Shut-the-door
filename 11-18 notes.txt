@@ -11,6 +11,7 @@ output: "top 5"
 
 -maybe look at # that can attend time slot and then which rooms will fit
 	-currently finding all rooms that fit max students in class and then seeing who can fit in a time slot when that room is free
+-We DO NOT need to do the above because the class in which a room is placed must be dependant upon the max number of students allowed to enroll in the class. This is because the class must be open to other students enrolling after the move, since a move could occur at any time before or during the semester. It is perfectly reasonable to assume that a moved class would be made available to students that had a schedule conflict with the previous timeslot, if the timeslot changes
 
 -look at ABET requirements for final presentation
 

@@ -5,3 +5,8 @@ good CRN's for final project presentation:
 11001: handles bad start/end time
 11589: no building
 10116: top 4 include 1 grad student, option with most students does not have grad students
+-----
+MBB sessions -
+10327: good variety; most students not in top 4, MWF/TR split
+10457: 3 SU students, example of 12 times being popular
+10873: example of priority
