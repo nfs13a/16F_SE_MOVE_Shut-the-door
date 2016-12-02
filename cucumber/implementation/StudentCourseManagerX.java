@@ -1385,7 +1385,7 @@ public class StudentCourseManagerX {
 			if (j == 0) System.out.println("   |None|");
 			else if (j % 10 > 0) System.out.println("");
 			System.out.println(temp.classCount());
-			System.out.println("   Number of students that cannot attend: " + temp.getNumCannot());
+			System.out.println("   Number of students that can attend: " + temp.getNumCan());
 				
 			System.out.println("Banners that cannot attend:");
 			
