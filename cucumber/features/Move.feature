@@ -1,8 +1,8 @@
 Feature: Move a course instance from day+time to another
 
-	#Scenario: CS120 exists
-		#Given CSV "big"
-		#Then course "CS120" exists
+	Scenario: CS120 exists
+		Given CSV "big"
+		Then course "CS120" exists
 
 	Scenario: CS120 exists
 		Given database courses
