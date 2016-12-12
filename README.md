@@ -1,3 +1,7 @@
+GROUP MEMBERS:
+   - Nevan Simone
+   - Preston Werner
+   - Steven Nagy
 # Installation and Running:
 _____________
 | Requires: |
